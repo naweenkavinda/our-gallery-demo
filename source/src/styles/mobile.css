@@ -1,0 +1,173 @@
+/*
+ * Phones and small windows. main.js puts `compact` on <body> for touch devices and narrow windows,
+ * and `short` as well when the screen is low (a phone held sideways).
+ */
+
+/* a phone held upright: ask for landscape (it can be waved away) */
+#rotate-hint {
+  position: fixed; inset: 0; z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 0.9rem; padding: 2rem; text-align: center; background: #15151a; color: #f2ebde;
+}
+#rotate-hint[hidden] { display: none; }
+#rotate-hint h2 { margin: 0; font: 500 1.9rem "Cormorant Garamond", Georgia, serif; }
+#rotate-hint p { margin: 0; max-width: 20rem; font: 400 0.9rem/1.45 Inter, sans-serif; opacity: 0.75; }
+#rotate-hint button { margin-top: 0.6rem; padding: 0.55rem 1.1rem; border-radius: 2rem; border: 1px solid rgba(255, 255, 255, 0.3); background: transparent; color: inherit; font: 500 0.78rem Inter, sans-serif; }
+.rotate-phone { width: 5.5rem; height: 5.5rem; color: #c9a15a; animation: rotate-tilt 2.8s ease-in-out infinite; }
+@keyframes rotate-tilt { 0%, 15% { transform: rotate(0); } 55%, 85% { transform: rotate(-90deg); } 100% { transform: rotate(0); } }
+
+/* the keyboard hint bar means nothing without a keyboard */
+.touch #controls-bar { display: none; }
+
+/* nothing should select, zoom or scroll while you play */
+.compact #gallery-screen { touch-action: none; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; -webkit-tap-highlight-color: transparent; }
+.compact #gallery-screen input, .compact #gallery-screen textarea { -webkit-user-select: text; user-select: text; }
+.compact .mob-action, .compact .mob-pill, .compact .emote-btn { touch-action: manipulation; }
+
+/* ── the character picker ── */
+.compact #customiser-panel {
+  left: 0.6rem; right: 0.6rem; width: auto; top: auto; transform: none;
+  bottom: calc(env(safe-area-inset-bottom, 0px) + 0.6rem);
+  padding: 1rem 1rem 0.9rem; border-radius: 1.1rem;
+}
+.compact .lobby-eyebrow { font-size: 0.62rem; margin-bottom: 0.15rem; }
+.compact #customiser-panel h2 { font-size: 1.55rem; margin-bottom: 0.7rem; }
+.compact .char-toggle { grid-template-columns: 1fr 1fr; gap: 0.5rem; margin-bottom: 0.8rem; }
+.compact .char-btn { padding: 0.55rem 0.7rem; gap: 0.55rem; }
+.compact .char-initial { width: 1.8rem; height: 1.8rem; font-size: 1rem; }
+.compact .char-name { font-size: 1.15rem; }
+.compact .btn-enter { padding: 0.8rem; }
+.compact .lobby-hint { display: none; }
+.compact .lobby-title { font-size: 1.6rem; left: 1rem; top: calc(env(safe-area-inset-top, 0px) + 0.8rem); }
+
+/* ── the top bar: counters on the left, buttons on the right, nothing on top of anything ── */
+.compact .quest-hud { top: calc(env(safe-area-inset-top, 0px) + 0.5rem); left: calc(env(safe-area-inset-left, 0px) + 0.5rem); gap: 0.3rem; }
+.compact .quest-hud span { padding: 0.26rem 0.6rem; font-size: 0.68rem; }
+.compact #top-right-icons { left: auto; right: calc(env(safe-area-inset-right, 0px) + 0.5rem); top: calc(env(safe-area-inset-top, 0px) + 0.5rem); gap: 0.25rem; }
+.compact #top-right-icons button { width: 2.1rem; height: 2.1rem; font-size: 0.9rem; }
+.compact #btn-settings { display: none; }
+.compact .legend-btn { right: calc(env(safe-area-inset-right, 0px) + 0.5rem); top: calc(env(safe-area-inset-top, 0px) + 3rem); width: 2.1rem; height: 2.1rem; }
+.compact .legend-btn::after, .compact .emote-btn::after { display: none; }       /* the keyboard hints mean nothing on a phone */
+.compact .legend {
+  left: 0.5rem; right: 0.5rem; width: auto; top: calc(env(safe-area-inset-top, 0px) + 5.4rem);
+  max-height: calc(100dvh - 7rem); overflow-y: auto; padding: 0.8rem 0.9rem 0.6rem;
+}
+.compact .legend-row { grid-template-columns: 6.4rem 1fr; font-size: 0.78rem; }
+
+/* reactions: behind the smiley button instead of a tall column of five */
+.compact #emote-bar {
+  display: none; flex-direction: row; gap: 0.3rem; padding: 0.3rem; border-radius: 2rem;
+  top: calc(env(safe-area-inset-top, 0px) + 3rem); right: 3.2rem; bottom: auto; left: auto;
+  background: rgba(30, 30, 36, 0.78); backdrop-filter: blur(8px);
+}
+.compact #emote-bar.open { display: flex; }
+.compact .emote-btn { width: 2.3rem; height: 2.3rem; }
+
+/* messages sit under the top bar, never over the controls */
+.compact #toast {
+  top: calc(env(safe-area-inset-top, 0px) + 3.3rem); max-width: calc(100vw - 5.4rem); text-align: center;
+  padding: 0.5rem 0.9rem; border-radius: 1rem; font-size: 0.78rem; line-height: 1.3;
+}
+.compact .hold-hint { bottom: calc(env(safe-area-inset-bottom, 0px) + 7rem); font-size: 0.74rem; }
+.compact #prompt-bubble { font-size: 0.74rem; padding: 0.35rem 0.7rem; }
+
+/* ── the touch controls ── */
+.compact #joy-zone { width: 50%; height: 46%; }
+.compact #joy-base { width: 116px; height: 116px; left: calc(env(safe-area-inset-left, 0px) + 1.1rem); bottom: calc(env(safe-area-inset-bottom, 0px) + 1.2rem); }
+.compact #joy-thumb { width: 48px; height: 48px; }
+.compact .mob-action { width: 3.7rem; height: 3.7rem; font-size: 1.05rem; background: rgba(30, 30, 36, 0.72); backdrop-filter: blur(6px); }
+.compact #mob-btn-e { right: calc(env(safe-area-inset-right, 0px) + 1.1rem); bottom: calc(env(safe-area-inset-bottom, 0px) + 6.6rem); }
+.compact #mob-btn-f { right: calc(env(safe-area-inset-right, 0px) + 1.1rem); bottom: calc(env(safe-area-inset-bottom, 0px) + 2.2rem); }
+.compact #mob-btn-j { right: calc(env(safe-area-inset-right, 0px) + 5.5rem); bottom: calc(env(safe-area-inset-bottom, 0px) + 3.6rem); font-size: 1.2rem; }
+.compact #mob-extras {
+  left: 0.8rem; bottom: calc(env(safe-area-inset-bottom, 0px) + 10.6rem);
+  flex-direction: row; flex-wrap: wrap; width: min(15.5rem, 58vw); gap: 0.35rem;
+}
+.compact .mob-pill { padding: 0.4rem 0.7rem; font-size: 0.7rem; background: rgba(30, 30, 36, 0.72); backdrop-filter: blur(6px); }
+
+/* looking at a photo or reading something: the controls step out of the way */
+.viewing #mobile-controls, .viewing #emote-bar { display: none !important; }
+
+/* ── what opens on top of the game ── */
+.compact .modal { padding: 0.8rem; }
+.compact .paper { padding: 1.6rem 1.3rem 1.2rem; max-height: calc(100dvh - 1.6rem); overflow-y: auto; }
+.compact .paper-text { font-size: 1.35rem; line-height: 30px; }
+.compact .paper-title { font-size: 1.5rem; }
+.compact .paper-sign { font-size: 1.5rem; }
+.compact .surprise-card { padding: 1.8rem 1.3rem 1.5rem; max-height: calc(100dvh - 1.6rem); overflow-y: auto; }
+.compact .surprise-card h2 { font-size: 1.8rem; }
+.compact .surprise-card .ask { font-size: 1.55rem; margin: 1rem 0 1.3rem; }
+.compact .surprise-actions { flex-wrap: wrap; height: auto; min-height: 3.4rem; }
+.compact .surprise-actions button { padding: 0.75rem 1.2rem; font-size: 0.74rem; }
+.compact .mail-card { padding: 1.1rem 1rem 0.9rem; max-height: calc(100dvh - 1.6rem); }
+.compact .mail-card h2 { font-size: 1.45rem; }
+.compact .postcard { font-size: 1.1rem; }
+
+/* the notes under a photo: a sheet from the bottom instead of a panel over the picture */
+.compact .guest-panel {
+  left: 0.5rem; right: 0.5rem; width: auto; top: auto; height: auto; min-height: 9rem; max-height: 42dvh;
+  bottom: calc(env(safe-area-inset-bottom, 0px) + 0.5rem); padding: 0.8rem;
+}
+.compact .guest-form input { font-size: 16px; }                  /* 16px stops phones zooming in when the box is focused */
+.compact .mail-card textarea { font-size: 1.2rem; }
+
+.compact .booth-count span { font-size: 6rem; }
+.compact .polaroid { width: min(13rem, 66vw); }
+
+/* ── a phone held sideways: very little height ── */
+.short .legend {
+  left: calc(env(safe-area-inset-left, 0px) + 0.5rem); right: auto; width: min(25rem, 56vw);
+  top: calc(env(safe-area-inset-top, 0px) + 2.3rem); max-height: calc(100dvh - 3rem - env(safe-area-inset-bottom, 0px)); padding: 0.5rem 0.7rem 0.4rem;
+}
+.short .legend-title { font-size: 0.95rem; margin-bottom: 0.25rem; }
+.short .legend-row { grid-template-columns: 4.6rem 1fr; font-size: 0.66rem; padding: 0.12rem 0; }
+.short .legend-foot { font-size: 0.62rem; margin-top: 0.3rem; }
+.short .mail-card { overflow-y: auto; width: min(34rem, 92vw); }
+.short .mail-card textarea { height: 4.2rem; min-height: 0; }
+.short .mail-close { position: sticky; bottom: 0; }
+.short .quest-hud span { font-size: 0.62rem; padding: 0.2rem 0.5rem; }
+.short #top-right-icons button, .short .legend-btn { width: 1.9rem; height: 1.9rem; }
+.short .legend-btn { top: calc(env(safe-area-inset-top, 0px) + 2.7rem); }
+.short #emote-bar { top: calc(env(safe-area-inset-top, 0px) + 0.5rem); right: calc(env(safe-area-inset-right, 0px) + 11.5rem); }
+.short #joy-base { width: 100px; height: 100px; bottom: calc(env(safe-area-inset-bottom, 0px) + 0.6rem); }
+.short .mob-action { width: 3.2rem; height: 3.2rem; }
+.short #mob-btn-e { bottom: calc(env(safe-area-inset-bottom, 0px) + 4.4rem); right: calc(env(safe-area-inset-right, 0px) + 1rem); }
+.short #mob-btn-f { bottom: calc(env(safe-area-inset-bottom, 0px) + 0.7rem); right: calc(env(safe-area-inset-right, 0px) + 1rem); }
+.short #mob-btn-j { bottom: calc(env(safe-area-inset-bottom, 0px) + 2.5rem); right: calc(env(safe-area-inset-right, 0px) + 4.8rem); }
+.short #mob-extras { left: calc(env(safe-area-inset-left, 0px) + 8rem); bottom: calc(env(safe-area-inset-bottom, 0px) + 0.7rem); width: auto; max-width: calc(100vw - 16rem); }
+.short .mob-pill { padding: 0.32rem 0.6rem; font-size: 0.66rem; }
+.short #toast { top: calc(env(safe-area-inset-top, 0px) + 0.5rem); left: 50%; max-width: 40vw; }
+.short .guest-panel { top: calc(env(safe-area-inset-top, 0px) + 0.5rem); bottom: 0.5rem; left: auto; right: 0.5rem; width: min(22rem, 48vw); height: auto; max-height: none; }
+.short .paper { padding: 1rem 1.2rem 0.8rem; }
+.short .paper-text { font-size: 1.15rem; line-height: 26px; }
+.short .surprise-card { padding: 1rem 1.2rem; }
+.short .surprise-card h2 { font-size: 1.4rem; margin-bottom: 0.2rem; }
+.short .surprise-card .ask { font-size: 1.25rem; margin: 0.5rem 0 0.7rem; }
+.short #customiser-panel { left: auto; width: min(22rem, 52vw); top: 50%; bottom: auto; right: 1rem; transform: translateY(-50%); padding: 0.8rem 0.9rem; }
+.short #customiser-panel h2 { font-size: 1.25rem; margin-bottom: 0.4rem; }
+.short .lobby-title { font-size: 1.2rem; }
+
+/* the photo caption and its close button sit under the top buttons, not on them */
+.compact .pv-label { top: calc(env(safe-area-inset-top, 0px) + 3.2rem); left: 0.5rem; transform: none; font-size: 0.74rem; max-width: 55vw; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.compact .pv-close { top: calc(env(safe-area-inset-top, 0px) + 5.4rem); right: 0.5rem; padding: 0.35rem 0.8rem; font-size: 0.78rem; }
+.compact #photo-viewer:not([hidden]) .pv-close { top: calc(env(safe-area-inset-top, 0px) + 5.4rem); }
+
+/* the booth's result screen: the picture on top, the pickers under it */
+.compact .booth-edit { padding: calc(env(safe-area-inset-top, 0px) + 0.4rem) 0.5rem calc(env(safe-area-inset-bottom, 0px) + 0.5rem); }
+.compact .be-card { flex-direction: column; gap: 0.6rem; width: 100%; }
+.compact .be-stage canvas { height: min(52dvh, 78vw * 4 / 3); }
+.compact .be-side { width: 100%; max-width: 26rem; padding: 0.7rem 0.8rem 0.7rem; border-radius: 0.9rem; }
+.compact .be-side h2 { display: none; }
+.compact .be-label { margin: 0.35rem 0 0.25rem; }
+.compact .be-frames, .compact .be-stickers { flex-wrap: nowrap; overflow-x: auto; padding-bottom: 0.2rem; -webkit-overflow-scrolling: touch; scrollbar-width: none; }
+.compact .be-frames::-webkit-scrollbar, .compact .be-stickers::-webkit-scrollbar { display: none; }
+.compact .be-frames button, .compact .be-stickers button { flex: none; }
+.compact .be-actions { margin-top: 0.55rem; }
+.short .be-card { flex-direction: row; align-items: center; }
+.short .be-stage canvas { height: calc(100dvh - 1.2rem); }
+.short .be-side { width: min(20rem, 50vw); max-width: none; }
+
+/* looking at a picture on a phone: the close button is big, solid and always on top of the notes */
+.compact .pv-close { z-index: 5; padding: 0.55rem 1.1rem; font-size: 0.9rem; font-weight: 600; background: rgba(247, 241, 231, 0.96); color: #1a1a1f; box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4); }
+/* held sideways the notes take the right-hand side, so the button and the caption go on the left, under the counters */
+.short .pv-close, .short #photo-viewer:not([hidden]) .pv-close { top: calc(env(safe-area-inset-top, 0px) + 2.5rem); right: auto; left: calc(env(safe-area-inset-left, 0px) + 0.5rem); }
+.short .pv-label { top: calc(env(safe-area-inset-top, 0px) + 5.2rem); left: calc(env(safe-area-inset-left, 0px) + 0.5rem); max-width: 40vw; }

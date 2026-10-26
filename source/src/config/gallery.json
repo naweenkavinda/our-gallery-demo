@@ -1,0 +1,42 @@
+{
+  "title": "Our Gallery (Demo)",
+  "from": "Alex",
+  "to": "Sam",
+  "dedication": "Every picture here is made up, so you can look without worrying about anyone's privacy.",
+  "relationshipStart": "2025-03-14",
+  "signature": "Alex",
+  "song": { "title": "Demo tune", "file": "./audio/none.mp3" },
+  "notes": [
+    { "text": "This gallery is a floor plan of rectangles and doorways, filled in room by room. Every room has its own colour." },
+    { "text": "The red carpet runs from the front door to the garden. The garden has a skylight that follows the real time of day." },
+    { "text": "Behind the garden there is a planetarium: lie back on a lounger and the dome fills with stars. Press E at the projector to change the sky." },
+    { "text": "The cinema past the garden shows a slideshow while it waits for a film. The popcorn stand pops by itself." },
+    { "text": "You are Teddy, the gallery dog. Walk up to the sculpture, sit by the benches, or bark at the paintings." },
+    { "text": "None of the pictures are real photos. They were drawn by a short script, so the walls are never empty." }
+  ],
+  "surprise": {
+    "title": "One last thing...",
+    "text": "You found every little heart in the gallery.",
+    "question": "Did you enjoy the walk?",
+    "yes": "Yes, it was lovely",
+    "no": "Let me look around again..."
+  },
+  "videos": [],
+  "captions": { "1": "Welcome" },
+  "finalLetter": {
+    "kicker": "The last letter",
+    "paragraphs": [
+      "You found every note, which means you walked the whole way down the red carpet to get here.",
+      "This is a demo of a private gallery that was built as a gift. The real one has real photographs; this one has drawings, so anyone can wander through it.",
+      "Thanks for visiting."
+    ],
+    "sign": "The gallery"
+  },
+  "monthiversary": {
+    "kicker": "Month {n} together",
+    "title": "Happy monthiversary",
+    "text": "Another month has gone by. Here is to the next one.",
+    "yearTitle": "Happy anniversary",
+    "yearText": "Another year. Thank you for visiting."
+  }
+}

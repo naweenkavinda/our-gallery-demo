@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Our Gallery (Demo)</title>
+  <meta name="theme-color" content="#15151a">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Gallery demo">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="apple-touch-icon" href="./icons/apple-touch-icon.png">
+  <link rel="icon" type="image/png" href="./icons/icon-192.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Inter:wght@400;500;600&family=Caveat:wght@500;600&display=swap" rel="stylesheet">
+  <script type="module" crossorigin src="./assets/index-TTyLhonf.js"></script>
+  <link rel="stylesheet" crossorigin href="./assets/index-BclsqqKd.css">
+</head>
+<body>
+  <!-- A phone held upright: the gallery is made for landscape -->
+  <div id="rotate-hint" hidden>
+    <svg class="rotate-phone" viewBox="0 0 64 64" aria-hidden="true"><rect x="22" y="6" width="20" height="36" rx="4" fill="none" stroke="currentColor" stroke-width="3"/><circle cx="32" cy="36" r="1.8" fill="currentColor"/><path d="M12 50c6 8 22 10 34 2" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"/><path d="M48 44l-2 8-8-3" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    <h2>Turn your phone sideways</h2>
+    <p>The gallery is made for landscape. Lock rotation off if it does not turn by itself.</p>
+    <button id="rotate-skip" type="button">Stay in portrait anyway</button>
+  </div>
+
+  <!-- Title Screen -->
+  <div id="title-screen">
+    <div class="title-content">
+      <h1 class="title-name">Our Gallery</h1>
+      <p class="title-from">A walk-through 3D gallery &ensp;|&ensp; portfolio <em>demo</em></p>
+      <button id="btn-start" class="btn-primary">Start</button>
+      <label class="fs-check">
+        <input type="checkbox" id="chk-fullscreen" checked>
+        Open in full screen
+      </label>
+      <p class="demo-note">The pictures are drawn, not photographs. You play Teddy the dog: walk with W A S D (or the stick on a phone).<br><a href="https://naweenkavinda.github.io/portfolio/">Back to the portfolio</a></p>
+    </div>
+  </div>
+
+  <!-- Character select (Lobby) -->
+  <div id="lobby-screen" hidden>
+    <canvas id="lobby-canvas"></canvas>
+    <h1 class="lobby-title">Choose who walks in.</h1>
+    <div id="customiser-panel">
+      <p class="lobby-eyebrow">Welcome</p>
+      <h2>Who is visiting?</h2>
+      <div class="char-toggle">
+        <button class="char-btn active" data-char="boy"><span class="char-initial">N</span><span class="char-name">Alex</span></button>
+        <button class="char-btn" data-char="girl"><span class="char-initial">P</span><span class="char-name">Sam</span></button>
+      </div>
+      <p id="lobby-msg" class="lobby-msg" hidden></p>
+      <button id="btn-enter" class="btn-enter">Enter the gallery</button>
+      <button id="btn-teddy" class="teddy-link" type="button">teddy login</button>
+      <p class="lobby-hint"><kbd>&larr;</kbd> <kbd>&rarr;</kbd> choose &nbsp; <kbd>Enter</kbd> go in</p>
+    </div>
+  </div>
+
+  <div id="toast" hidden></div>
+
+  <!-- Gallery (game) -->
+  <div id="gallery-screen" hidden>
+    <canvas id="gallery-canvas"></canvas>
+
+    <!-- HUD -->
+    <div id="hud">
+      <div id="room-label"></div>
+      <div id="controls-bar">
+        <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> walk
+        <kbd>Shift</kbd> run
+        <kbd>Space</kbd> jump
+        <kbd>E</kbd> look closer
+        <kbd>F</kbd> sit / stand
+        <kbd>1</kbd>-<kbd>5</kbd> emotes
+        <kbd>9</kbd> all controls<span class="sep"></span>
+        Click to look around
+      </div>
+    </div>
+
+    <!-- Interaction prompts -->
+    <div id="prompt-bubble" hidden></div>
+
+    <!-- Photo viewer overlay -->
+    <div id="photo-viewer" hidden>
+      <div class="pv-label">Viewing</div>
+      <button class="pv-close" id="pv-close">✕ Close  &middot;  E</button>
+      <div class="pv-frame">
+        <img id="pv-img" alt="Photo">
+      </div>
+    </div>
+
+    <!-- Mobile controls -->
+    <div id="mobile-controls" hidden>
+      <div id="joy-zone"><div id="joy-base"><div id="joy-thumb"></div></div></div>
+      <div id="look-zone"></div>
+      <button id="mob-btn-e" class="mob-action">E</button>
+      <button id="mob-btn-f" class="mob-action">F</button>
+      <button id="mob-btn-j" class="mob-action" aria-label="Jump">&#8679;</button>
+      <div id="mob-extras">
+        <button class="mob-pill" data-code="KeyK">Kiss</button>
+        <button class="mob-pill" data-code="KeyH">Hold hands</button>
+        <button class="mob-pill" data-code="KeyL">Listen</button>
+        <button class="mob-pill" data-code="KeyR">Lean</button>
+        <button class="mob-pill" data-code="KeyT">Dance</button>
+        <button class="mob-pill" data-code="KeyN">Clue</button>
+        <button class="mob-pill" data-code="KeyG">Dog hint</button>
+      </div>
+    </div>
+
+    <!-- Emote bar -->
+    <div id="emote-bar">
+      <button class="emote-btn" data-emote="wave" data-key="1" title="Wave">👋</button>
+      <button class="emote-btn" data-emote="blowKiss" data-key="2" title="Blow a Kiss">💋</button>
+      <button class="emote-btn" data-emote="dance1" data-key="3" title="Dance 1">💃</button>
+      <button class="emote-btn" data-emote="dance2" data-key="4" title="Dance 2">🕺</button>
+      <button class="emote-btn" data-emote="dance3" data-key="5" title="Dance 3">🪩</button>
+    </div>
+
+    <!-- Minimap -->
+    <canvas id="minimap" width="120" height="200"></canvas>
+
+    <!-- Settings -->
+    <div id="top-right-icons">
+      <button id="btn-emoji" title="Reactions">😊</button>
+      <button id="btn-voice" title="Voice chat (V)">🎙</button>
+      <button id="btn-audio" title="Audio">🔊</button>
+      <button id="btn-fullscreen" title="Fullscreen">⛶</button>
+    </div>
+  </div>
+
+</body>
+</html>
+
+
+
+
+
+
+

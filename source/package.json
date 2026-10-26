@@ -1,0 +1,18 @@
+{
+  "name": "our-gallery-demo",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "A walk-through 3D gallery demo. The build goes into the repository root, which GitHub Pages serves.",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build"
+  },
+  "dependencies": {
+    "@pixiv/three-vrm": "^3.3.0",
+    "three": "^0.168.0"
+  },
+  "devDependencies": {
+    "vite": "^6.0.0"
+  }
+}

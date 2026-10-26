@@ -1,0 +1,4 @@
+# dependencies and local tooling
+source/node_modules/
+node_modules/
+_*.mjs
