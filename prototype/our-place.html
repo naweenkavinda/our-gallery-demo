@@ -174,34 +174,147 @@ const DAY_MS = 12*60*1000, EPOCH = Date.UTC(2026,10,1);
 const START_CREDITS = 500, ROAD_PRICE = 5;
 const COLORS = ["#d4685a","#e8b44a","#5d8b57","#6f9fc8","#9a7cc9","#d98bb0","#4fa59c","#7b6a5a"];
 
-/* Catalogue. H/RH are wall and roof heights in screen pixels at zoom 1. */
-const TYPES = {
-  townhall:   {name:"Town Hall",    cat:"Services", size:[4,3], price:0,    act:"Do the paperwork", verb:"Doing paperwork", secs:6,  reward:30, style:"civic",  wall:"#e9e3d6", roof:"#6f7f99", H:30, RH:16, starter:true, glow:"#ffd28a"},
-  cottage:    {name:"Cottage",      cat:"Homes",    size:[2,2], price:150,  act:"Take a nap",       verb:"Napping",         secs:5,  reward:8,  style:"gable",  wall:"#b5624b", roof:"#4b3b36", H:16, RH:14, residents:2, chimney:true, glow:"#ffbf6b"},
-  apartment:  {name:"Apartments",   cat:"Homes",    size:[3,3], price:450,  act:"Tidy up",          verb:"Tidying up",      secs:6,  reward:14, style:"flat",   wall:"#d8cbb8", roof:"#8d7f72", H:58, residents:4, glow:"#ffbf6b"},
-  cafe:       {name:"Café",         cat:"Fun",      size:[2,2], price:220,  act:"Grab a coffee",    verb:"Having coffee",   secs:5,  reward:14, style:"shop",   wall:"#efe4cf", roof:"#a9584a", H:20, awning:"#5d8b57", leisure:true, glow:"#ffcf8a"},
-  playground: {name:"Playground",   cat:"Fun",      size:[2,2], price:150,  act:"Play",             verb:"Playing",         secs:5,  reward:12, style:"playground", leisure:true, glow:"#9effc0"},
-  park:       {name:"Park",         cat:"Fun",      size:[3,3], price:120,  act:"Go for a walk",    verb:"Strolling",       secs:5,  reward:10, style:"park", leisure:true, glow:"#9effc0"},
-  gym:        {name:"Gym",          cat:"Fun",      size:[3,2], price:450,  act:"Work out",         verb:"Working out",     secs:7,  reward:28, style:"flat",   wall:"#a7b4bf", roof:"#5b6873", H:22, glow:"#b78bff"},
-  cinema:     {name:"Cinema",       cat:"Fun",      size:[3,3], price:550,  act:"Watch a film",     verb:"Watching a film", secs:8,  reward:26, style:"flat",   wall:"#7d5a7e", roof:"#4a3550", H:30, leisure:true, glow:"#c98bff"},
-  library:    {name:"Library",      cat:"Learning", size:[3,3], price:400,  act:"Read books",       verb:"Reading",         secs:6,  reward:25, style:"civic",  wall:"#d9c8a8", roof:"#7a4a3c", H:24, RH:14, glow:"#ffd28a"},
-  school:     {name:"School",       cat:"Learning", size:[4,3], price:700,  act:"Study",            verb:"Studying",        secs:7,  reward:32, style:"gable",  wall:"#b88a68", roof:"#6b4a3e", H:22, RH:16, glow:"#ffd28a"},
-  office:     {name:"Office",       cat:"Work",     size:[3,3], price:600,  act:"Work a shift",     verb:"Working",         secs:8,  reward:40, style:"flat",   wall:"#c9cfd6", roof:"#7a8592", H:72, glow:"#9fd0ff"},
-  market:     {name:"Market",       cat:"Work",     size:[3,2], price:300,  act:"Sell goods",       verb:"Selling goods",   secs:6,  reward:22, style:"shop",   wall:"#efe6d6", roof:"#b55c4c", H:20, awning:"#c9493a", glow:"#ffcf8a"},
-  factory:    {name:"Factory",      cat:"Work",     size:[4,3], price:900,  act:"Run the line",     verb:"On the line",     secs:10, reward:60, style:"factory",wall:"#b9aa9b", roof:"#7d6a5c", H:28, glow:"#ffb36b"},
-  hospital:   {name:"Hospital",     cat:"Services", size:[4,4], price:1200, act:"Volunteer",        verb:"Volunteering",    secs:10, reward:55, style:"flat",   wall:"#f1efea", roof:"#c9cdd0", H:46, cross:true, glow:"#9effd9"},
-  fire:       {name:"Fire Station", cat:"Services", size:[3,2], price:650,  act:"Run a drill",      verb:"Running a drill", secs:8,  reward:35, style:"flat",   wall:"#c9574a", roof:"#7d3a32", H:24, glow:"#ffb36b"},
-  farm:       {name:"Farm",         cat:"Land",     size:[4,4], price:500,  act:"Harvest",          verb:"Harvesting",      secs:9,  reward:45, style:"farm",   biome:[0,1], glow:"#ffcf8a"},
-  mine:       {name:"Mine",         cat:"Land",     size:[3,3], price:800,  act:"Dig for ore",      verb:"Digging",         secs:10, reward:62, style:"mine",   biome:[0], glow:"#ffb36b"},
-  sawmill:    {name:"Sawmill",      cat:"Land",     size:[3,3], price:700,  act:"Cut timber",       verb:"Cutting timber",  secs:9,  reward:50, style:"gable",  wall:"#9c7650", roof:"#56402c", H:18, RH:14, biome:[1], glow:"#ffbf6b"},
-  cabin:      {name:"Forest Cabin", cat:"Land",     size:[2,2], price:250,  act:"Light a campfire", verb:"By the campfire", secs:6,  reward:18, style:"gable",  wall:"#8a5b3a", roof:"#4b5b3f", H:14, RH:14, biome:[1], residents:2, chimney:true, glow:"#ffa25a"},
-  ranger:     {name:"Ranger Tower", cat:"Land",     size:[2,2], price:350,  act:"Watch for fires",  verb:"On fire watch",   secs:7,  reward:26, style:"tower",  wall:"#8b6a45", roof:"#4d6b3a", H:46, biome:[1], glow:"#ffbf6b"},
-  solar:      {name:"Solar Farm",   cat:"Land",     size:[4,4], price:750,  act:"Clean the panels", verb:"Cleaning panels", secs:7,  reward:38, style:"solar",  biome:[2], glow:"#9fd0ff"},
-  spa:        {name:"Oasis Spa",    cat:"Land",     size:[3,3], price:600,  act:"Relax in the pool",verb:"Relaxing",        secs:6,  reward:22, style:"dome",   wall:"#efdcb6", roof:"#5aa6a0", H:18, biome:[2], leisure:true, glow:"#9effd9"},
-  observatory:{name:"Observatory",  cat:"Land",     size:[3,3], price:900,  act:"Stargaze",         verb:"Stargazing",      secs:8,  reward:40, style:"dome",   wall:"#e7e1d4", roof:"#8b93a8", H:24, biome:[2], glow:"#b78bff"},
-  bazaar:     {name:"Desert Bazaar",cat:"Land",     size:[3,2], price:400,  act:"Trade spices",     verb:"Trading spices",  secs:6,  reward:24, style:"shop",   wall:"#e8cf9c", roof:"#b06a3a", H:18, awning:"#c46a2b", biome:[2], glow:"#ffb36b"},
-};
-const CATS = ["Homes","Work","Fun","Learning","Services","Land"];
+/* Catalogue: 124 building types.
+   key|Name|Category|w|h|price|activity|verb|secs|reward|style|wall|roof|height|flags
+   flags: R<n> residents · L leisure · C chimney · X red cross · A<hex> awning · B<digits> biomes · S<SIGN> board text (_ = space) · T starter only */
+const CATALOG = `
+cottage|Cottage|Homes|2|2|150|Take a nap|Napping|5|8|gable|#b5624b|#4b3b36|16|R2 C
+bungalow|Bungalow|Homes|2|2|180|Water the plants|Watering plants|5|9|gable|#d8c3a0|#6b5a4a|14|R2
+townhouse|Townhouse|Homes|2|2|260|Cook dinner|Cooking dinner|6|12|gable|#c9a27a|#5a4038|26|R3 C
+terrace|Terrace Row|Homes|3|2|380|Fix the porch|Fixing the porch|6|13|gable|#b98a6a|#4a3a33|22|R5 C
+duplex|Duplex|Homes|3|2|340|Mow the lawn|Mowing the lawn|6|12|gable|#9fb3c4|#4a5563|18|R4
+villa|Villa|Homes|3|3|900|Swim a few laps|Swimming|7|20|gable|#efe3cc|#a9584a|20|R4
+mansion|Mansion|Homes|4|3|1600|Host a dinner party|Hosting a party|8|32|civic|#f0e8d8|#5a5f7a|28|R6
+apartment|Apartments|Homes|3|3|450|Tidy up|Tidying up|6|14|flat|#d8cbb8|#8d7f72|58|R8
+towerblock|Tower Block|Homes|3|3|800|Water the balcony plants|Gardening|6|16|flat|#c2b8ae|#7b7068|92|R14
+loft|Loft Building|Homes|2|2|520|Paint a canvas|Painting|7|18|flat|#b06a52|#5a3a30|44|R4
+halls|Student Halls|Homes|3|3|600|Pull an all-nighter|Cramming|8|22|flat|#d4b48c|#7a5a44|40|R10
+retire|Retirement Home|Homes|3|3|700|Play bingo|Playing bingo|6|15|civic|#e6dccb|#7a6a5a|22|R8
+grocer|Grocery|Shops|2|2|260|Stack the shelves|Stacking shelves|6|18|shop|#efe4cf|#5d8b57|20|SGROCER A#5d8b57
+supermarket|Supermarket|Shops|4|3|900|Run a till|On the till|8|36|flat|#e9e4da|#c9493a|26|SSUPERMARKET
+florist|Florist|Shops|2|2|240|Arrange flowers|Arranging flowers|5|14|shop|#f3e6e8|#d98bb0|20|SFLOWERS A#d98bb0
+bookshop|Bookshop|Shops|2|2|300|Browse the shelves|Browsing books|6|16|shop|#e8dcc6|#7a4a3c|22|SBOOKS A#7a4a3c
+hardware|Hardware Store|Shops|3|2|420|Cut some keys|Cutting keys|6|20|shop|#d8d2c4|#c97a2a|20|SHARDWARE A#c97a2a
+pharmacy|Pharmacy|Shops|2|2|380|Fill prescriptions|Filling prescriptions|6|20|shop|#eef1ee|#3f9a6a|20|SPHARMACY A#3f9a6a
+boutique|Boutique|Shops|2|2|450|Style an outfit|Styling outfits|6|22|shop|#f2e8e2|#9a7cc9|22|SBOUTIQUE A#9a7cc9
+toyshop|Toy Shop|Shops|2|2|320|Test the toys|Testing toys|5|15|shop|#fff0d6|#e8b44a|20|STOYS A#d4685a
+electronics|Electronics Store|Shops|3|2|650|Fix a phone|Fixing a phone|7|28|flat|#cfd6dc|#3f5a7a|22|SELECTRONICS
+furniture|Furniture Store|Shops|3|3|700|Assemble a sofa|Assembling furniture|8|30|flat|#d9c7ad|#8a6a4a|22|SFURNITURE
+petshop|Pet Shop|Shops|2|2|300|Feed the puppies|Feeding puppies|5|15|shop|#f0e6d0|#6f9fc8|20|SPETS A#6f9fc8
+barber|Barber|Shops|2|2|220|Give a haircut|Cutting hair|5|13|shop|#f2eee6|#3f4a7a|20|SBARBER A#c9493a
+salon|Beauty Salon|Shops|2|2|340|Paint some nails|Doing nails|6|18|shop|#f6e6ee|#c97a9a|20|SSALON A#c97a9a
+laundry|Laundromat|Shops|2|2|200|Fold the laundry|Folding laundry|5|11|shop|#e2ecf2|#6f9fc8|18|SLAUNDRY A#6f9fc8
+mall|Shopping Mall|Shops|5|4|2400|Go window-shopping|Window-shopping|9|48|flat|#ebe3d6|#a59a8c|34|SMALL L
+giftshop|Gift Shop|Shops|2|2|260|Wrap presents|Wrapping presents|5|13|shop|#f4e2d2|#d4685a|20|SGIFTS A#e8b44a
+musicstore|Music Store|Shops|2|2|380|Tune a guitar|Tuning guitars|6|19|shop|#7a6a6a|#e8b44a|22|SMUSIC A#e8b44a
+sports|Sports Store|Shops|3|2|480|Pump up footballs|Pumping footballs|6|22|shop|#e6eef2|#2f6fb0|20|SSPORTS A#2f6fb0
+jeweller|Jeweller|Shops|2|2|900|Polish rings|Polishing rings|7|30|shop|#f4efe2|#b8902a|22|SJEWELS A#b8902a
+market|Market|Shops|3|2|300|Sell goods|Selling goods|6|22|shop|#efe6d6|#b55c4c|20|SMARKET A#c9493a
+carwash|Car Wash|Shops|3|2|350|Wash a car|Washing cars|6|17|flat|#dfe9f0|#4fa59c|16|SCAR_WASH
+petrol|Petrol Station|Shops|3|3|600|Pump fuel|Pumping fuel|5|20|flat|#f2f0ea|#d4574a|16|SFUEL
+cafe|Café|Food|2|2|220|Grab a coffee|Having coffee|5|14|shop|#efe4cf|#a9584a|20|SCAFÉ A#5d8b57 L
+bakery|Bakery|Food|2|2|260|Bake bread|Baking bread|6|16|shop|#f3e2c6|#b8743a|20|SBAKERY A#b8743a C
+pizzeria|Pizzeria|Food|2|2|320|Toss a pizza|Making pizza|6|18|shop|#f2e6d4|#c9493a|20|SPIZZA A#5d8b57
+diner|Diner|Food|3|2|360|Flip burgers|Flipping burgers|6|20|flat|#e8eef0|#d4574a|18|SDINER
+sushi|Sushi Bar|Food|2|2|420|Roll sushi|Rolling sushi|7|22|shop|#f4efe6|#2f2f3a|20|SSUSHI A#d4574a
+icecream|Ice Cream Parlour|Food|2|2|240|Scoop ice cream|Scooping ice cream|5|13|shop|#fbeef2|#e89ab4|18|SICE_CREAM A#e89ab4 L
+teahouse|Tea House|Food|2|2|260|Brew a pot of tea|Brewing tea|5|14|gable|#d9c7a8|#4f6b4a|16|STEA L
+restaurant|Restaurant|Food|3|3|800|Wait tables|Waiting tables|8|30|civic|#efe3cc|#7a3a3a|24|SRESTAURANT
+foodcourt|Food Court|Food|4|3|700|Serve noodles|Serving noodles|7|26|flat|#efe6d6|#e8b44a|20|SFOOD_COURT L
+juicebar|Juice Bar|Food|2|2|240|Blend smoothies|Blending smoothies|5|13|shop|#eef6e2|#7fb04a|18|SJUICE A#7fb04a
+grill|Barbecue Grill|Food|3|2|380|Grill skewers|Grilling|6|19|shop|#d9c2a0|#6b3a2a|18|SGRILL A#c9493a C
+donuts|Donut Shop|Food|2|2|230|Glaze donuts|Glazing donuts|5|13|shop|#fbe9d6|#d98bb0|18|SDONUTS A#d98bb0
+office|Office|Work|3|3|600|Work a shift|Working|8|40|flat|#c9cfd6|#7a8592|72|
+bank|Bank|Work|3|3|1100|Count money|Counting money|8|46|civic|#e9e3d6|#6f7f99|28|SBANK
+techcampus|Tech Campus|Work|4|4|2200|Write some code|Coding|9|58|flat|#4a586a|#2a3442|48|STECH
+studio|Design Studio|Work|2|2|500|Sketch a logo|Designing|7|26|flat|#e6ddd0|#d4685a|30|SSTUDIO
+newspaper|Newspaper Office|Work|3|2|650|Write a story|Writing a story|7|30|flat|#d8d2c4|#3b322c|30|SDAILY_NEWS
+radio|Radio Station|Work|2|2|600|Host a show|On air|7|28|flat|#d9cfc0|#6f5a8a|26|SRADIO
+callcentre|Call Centre|Work|3|3|550|Answer calls|Answering calls|7|26|flat|#c4ccd2|#5a6a78|40|SCALL_CENTRE
+lawfirm|Law Firm|Work|3|2|900|Review contracts|Reviewing contracts|8|38|civic|#e2dccd|#4a4f5a|26|SLAW
+skyscraper|Skyscraper|Work|3|3|3000|Close a big deal|Closing deals|10|70|flat|#9fb3c8|#5a6a80|130|
+cowork|Co-working Space|Work|3|2|450|Join a meeting|In a meeting|6|24|flat|#efe6d6|#5d8b57|28|SCOWORK
+postoffice|Post Office|Work|3|2|420|Sort the letters|Sorting mail|6|22|civic|#d9c8a8|#b5503f|22|SPOST
+lab|Research Lab|Work|3|3|1500|Run an experiment|Experimenting|9|52|flat|#eef1f2|#6fb0b0|36|SLAB
+factory|Factory|Industry|4|3|900|Run the line|On the line|10|60|factory|#b9aa9b|#7d6a5c|28|
+warehouse|Warehouse|Industry|4|3|700|Load pallets|Loading pallets|8|38|flat|#b9b2a6|#7a7064|24|SSTORAGE
+bottler|Soda Bottler|Industry|3|3|650|Bottle soda|Bottling soda|7|32|factory|#c9b8a8|#7a3a3a|24|
+recycling|Recycling Plant|Industry|4|3|800|Sort recycling|Sorting recycling|8|40|factory|#9fb38c|#4f6b3a|22|SRECYCLE
+textile|Textile Mill|Industry|4|3|850|Weave cloth|Weaving|9|44|factory|#c9a28a|#6b4a3a|26|
+printworks|Print Works|Industry|3|3|600|Run the press|Printing|7|32|factory|#c4bcb0|#4a5563|22|
+breadfactory|Bread Factory|Industry|4|3|750|Knead dough|Kneading dough|8|38|factory|#e6d2b0|#a9584a|24|
+powerplant|Power Plant|Industry|4|4|2000|Check the turbines|Checking turbines|10|66|factory|#b8b8b4|#6b6b68|34|
+waterworks|Water Works|Industry|3|3|900|Test the water|Testing water|8|40|dome|#d8e0e6|#6f9fc8|18|
+busdepot|Bus Depot|Industry|4|3|800|Service a bus|Servicing buses|8|36|flat|#d8d2c4|#e8b44a|20|SBUS_DEPOT
+playground|Playground|Fun|2|2|150|Play|Playing|5|12|playground|#ead6a6|#e8b44a|0|L
+park|Park|Fun|3|3|120|Go for a walk|Strolling|5|10|park|#9fc585|#7fb06a|0|L
+gym|Gym|Fun|3|2|450|Work out|Working out|7|28|flat|#a7b4bf|#5b6873|22|SGYM
+cinema|Cinema|Fun|3|3|550|Watch a film|Watching a film|8|26|flat|#7d5a7e|#4a3550|30|SCINEMA L
+bowling|Bowling Alley|Fun|3|3|650|Bowl a strike|Bowling|7|28|flat|#e6dcf0|#7a5aa0|24|SBOWLING L
+arcade|Arcade|Fun|2|2|480|Beat the high score|Gaming|6|22|flat|#4a3f6c|#d98bb0|22|SARCADE L
+pool|Swimming Pool|Fun|3|3|700|Swim some laps|Swimming|7|26|pool|#e8eef0|#6fb6d9|0|L
+stadium|Stadium|Fun|5|5|3500|Cheer on the team|Cheering|10|70|stadium|#d8d2c4|#c9493a|22|L
+skatepark|Skate Park|Fun|3|3|300|Land a kickflip|Skating|5|14|plaza|#cfcac2|#9a9590|0|L
+garden|Botanical Garden|Fun|4|4|900|Smell the roses|Exploring the garden|7|26|park|#9fc585|#7fb06a|0|L
+square|Town Square|Fun|3|3|250|Feed the pigeons|People-watching|5|11|plaza|#e6dccb|#bfb4a2|0|L
+theatre|Theatre|Fun|3|3|1000|Watch a play|Watching a play|9|38|civic|#c9a0a0|#6b2f3a|30|STHEATRE L
+karaoke|Karaoke Bar|Fun|2|2|420|Sing a duet|Singing|6|20|flat|#5a3a6a|#e8b44a|20|SKARAOKE L
+zoo|Zoo|Fun|5|4|2600|Feed the giraffes|Visiting the animals|9|52|park|#a9c98a|#7fb06a|0|L
+minigolf|Mini Golf|Fun|3|3|380|Sink a putt|Putting|6|18|park|#8fc27a|#7fb06a|0|L
+fairground|Fairground|Fun|4|4|1400|Ride the big wheel|On the rides|8|40|fair|#e6dccb|#d4685a|0|L
+library|Library|Learning|3|3|400|Read books|Reading|6|25|civic|#d9c8a8|#7a4a3c|24|SLIBRARY
+school|School|Learning|4|3|700|Study|Studying|7|32|gable|#b88a68|#6b4a3e|22|SSCHOOL
+college|College|Learning|4|4|1600|Attend a lecture|In a lecture|9|50|civic|#d9c2a0|#6b4a3e|30|SCOLLEGE
+kindergarten|Kindergarten|Learning|3|2|500|Read a story aloud|Reading aloud|6|20|gable|#f2d6a8|#d4685a|16|SKINDER
+museum|Museum|Learning|4|3|1400|Study the fossils|Exploring exhibits|8|42|civic|#e9e3d6|#8a8a8a|28|SMUSEUM
+gallery|Art Gallery|Learning|3|2|900|Curate a show|Curating|7|34|flat|#f4f2ee|#3b322c|24|SGALLERY
+science|Science Centre|Learning|4|3|1500|Launch a model rocket|Experimenting|8|44|dome|#e8e4dc|#5a7aa6|22|
+musicschool|Music School|Learning|3|2|650|Practise piano|Practising piano|7|28|gable|#d9c8b8|#5a4a6a|20|SMUSIC_SCHOOL
+langschool|Language School|Learning|2|2|480|Learn some French|Studying French|6|22|flat|#e6dccb|#4f78a3|26|SLANGUAGES
+townhall|Town Hall|Services|4|3|0|Do the paperwork|Doing paperwork|6|30|civic|#e9e3d6|#6f7f99|30|T STOWN_HALL
+hospital|Hospital|Services|4|4|1200|Volunteer|Volunteering|10|55|flat|#f1efea|#c9cdd0|46|X SHOSPITAL
+fire|Fire Station|Services|3|2|650|Run a drill|Running a drill|8|35|flat|#c9574a|#7d3a32|24|SFIRE
+police|Police Station|Services|3|2|700|Go on patrol|On patrol|8|36|flat|#4f6f9a|#2f3f5a|24|SPOLICE
+clinic|Clinic|Services|2|2|600|Do check-ups|Doing check-ups|7|30|flat|#f1efea|#5aa6a0|22|X SCLINIC
+vet|Vet|Services|2|2|520|Treat a puppy|Treating pets|7|26|shop|#eef2ea|#5d8b57|20|SVET A#5d8b57
+courthouse|Courthouse|Services|4|3|1300|Serve on a jury|On jury duty|9|44|civic|#ece6da|#6f6a60|30|SCOURT
+community|Community Centre|Services|3|3|500|Help out|Volunteering|7|24|gable|#d8c3a0|#5d8b57|20|SCOMMUNITY L
+busstation|Bus Station|Services|3|2|400|Wait for a bus|Waiting for a bus|5|12|flat|#e2dccd|#e8b44a|14|SBUS
+trainstation|Train Station|Services|5|3|1800|Catch a train|Travelling|9|46|civic|#d9c8a8|#5a4a3a|26|SSTATION
+wastedepot|Waste Depot|Services|3|3|450|Empty the bins|Collecting rubbish|7|24|flat|#9aa38c|#5a6a4a|18|
+farm|Farm|Land|4|4|500|Harvest|Harvesting|9|45|farm|#9fb86a|#d8c46a|0|B01
+ranch|Ranch|Land|4|4|700|Ride the horses|Riding|8|36|farm|#b9c98a|#a9c47a|0|B0
+mine|Mine|Land|3|3|800|Dig for ore|Digging|10|62|mine|#a8957c|#8d7b64|0|B0
+quarry|Quarry|Land|4|4|900|Split stone|Quarrying|10|60|mine|#bdb3a6|#9a9086|0|B0
+windfarm|Wind Farm|Land|3|3|850|Climb a turbine|Servicing turbines|8|42|wind|#cfc7a8|#e9e6df|0|B0
+greenhouse|Greenhouse|Land|3|3|500|Water the seedlings|Gardening|6|26|glass|#cfe6dc|#a9d2c4|14|B01
+sawmill|Sawmill|Land|3|3|700|Cut timber|Cutting timber|9|50|gable|#9c7650|#56402c|18|B1 SSAWMILL
+cabin|Forest Cabin|Land|2|2|250|Light a campfire|By the campfire|6|18|gable|#8a5b3a|#4b5b3f|14|B1 R2 C
+lodge|Forest Lodge|Land|3|3|700|Chop firewood|Chopping firewood|7|30|gable|#7a5236|#3f5b3a|18|B1 R4 C
+ranger|Ranger Tower|Land|2|2|350|Watch for fires|On fire watch|7|26|tower|#8b6a45|#4d6b3a|46|B1
+orchard|Orchard|Land|4|4|600|Pick apples|Picking apples|7|32|orchard|#a9c493|#7fb06a|0|B1
+beefarm|Bee Farm|Land|3|3|450|Collect honey|Beekeeping|6|24|farm|#e8c95a|#c9b07a|0|B1
+solar|Solar Farm|Land|4|4|750|Clean the panels|Cleaning panels|7|38|solar|#e1cfa2|#3d5a86|0|B2
+spa|Oasis Spa|Land|3|3|600|Relax in the pool|Relaxing|6|22|dome|#efdcb6|#5aa6a0|18|B2 L
+observatory|Observatory|Land|3|3|900|Stargaze|Stargazing|8|40|dome|#e7e1d4|#8b93a8|24|B2
+bazaar|Desert Bazaar|Land|3|2|400|Trade spices|Trading spices|6|24|shop|#e8cf9c|#b06a3a|18|B2 SBAZAAR A#c46a2b
+camel|Camel Stables|Land|3|3|550|Ride a camel|Riding camels|7|30|farm|#e2c992|#d1b67e|0|B2
+dates|Date Palm Grove|Land|4|4|600|Harvest dates|Harvesting dates|8|34|orchard|#e6d4aa|#7fb06a|0|B2
+saltworks|Salt Works|Land|4|3|650|Rake the salt|Raking salt|8|34|farm|#f6f2ea|#e6e0d2|0|B2
+resort|Desert Resort|Land|4|4|1800|Lounge by the pool|Lounging|8|46|dome|#f2e2c2|#c46a2b|20|B2 L
+`;
+const CAT_GLOW={Homes:"#ffbf6b",Shops:"#ffcf8a",Food:"#ffb36b",Work:"#9fd0ff",Industry:"#ffb36b",Fun:"#c98bff",Learning:"#ffd28a",Services:"#9effd9",Land:"#ffcf8a"};
+const TYPES={};
+for (const line of CATALOG.trim().split("\n")){
+  const f=line.split("|").map(s=>s.trim()); if (f.length<14) continue;
+  const [key,name,cat,w,h,price,act,verb,secs,reward,style,wall,roof,Hh,flags=""]=f;
+  const t={name,cat,size:[+w,+h],price:+price,act,verb,secs:+secs,reward:+reward,style,wall,roof,H:+Hh,RH:Math.round(8+Math.min(+w,+h)*3),glow:CAT_GLOW[cat]||"#ffd28a"};
+  for (const fl of flags.split(/\s+/).filter(Boolean)){ const k=fl[0], v=fl.slice(1);
+    if (k==="R") t.residents=+v; else if (k==="L") t.leisure=true; else if (k==="C") t.chimney=true; else if (k==="X") t.cross=true;
+    else if (k==="A") t.awning=v; else if (k==="B") t.biome=v.split("").map(Number); else if (k==="T") t.starter=true; else if (k==="S") t.sign=v.replace(/_/g," "); }
+  TYPES[key]=t;
+}
+const CATS=["Homes","Shops","Food","Work","Industry","Fun","Learning","Services","Land"];
 
 /* ============================================================
    NOISE + TERRAIN
@@ -230,7 +343,7 @@ const TOWN={x:Math.round(W*.37), y:Math.round(H*.5)};
     else { if (r<.028) deco[i]=3; else if (r<.04) deco[i]=2; else if (r<.046) deco[i]=6; }
   }
 })();
-const STARTER=[["s0","townhall",-2,-5],["s1","cafe",4,-4],["s2","library",7,-5],["s3","office",-7,-5],["s4","park",-6,2],["s5","playground",4,2],["s6","market",7,2],["s7","cottage",-10,2],["s8","cottage",-13,2],["s9","school",-12,-5],["s10","apartment",11,-5],["s11","cottage",11,2]];
+const STARTER=[["s0","townhall",-3,-5],["s1","cafe",4,-4],["s2","library",7,-5],["s3","office",-7,-5],["s4","park",-6,1],["s12","fire",-3,2],["s13","police",13,2],["s14","gym",14,-5],["s5","playground",4,2],["s6","market",7,2],["s7","cottage",-10,2],["s8","cottage",-13,2],["s9","school",-12,-5],["s10","apartment",11,-5],["s11","cottage",11,2]];
 for (let x=TOWN.x-30;x<=TOWN.x+30;x++) road[TOWN.y*W+x]=1;
 for (let y=TOWN.y-22;y<=TOWN.y+22;y++) road[y*W+TOWN.x+1]=1;
 for (let x=TOWN.x-16;x<=TOWN.x+16;x++){ road[(TOWN.y-6)*W+x]=1; road[(TOWN.y+4)*W+x]=1; }
@@ -250,7 +363,7 @@ const S={
 };
 const occ=new Int32Array(W*H).fill(-1);
 const nearB=new Uint8Array(W*H);
-let destCache=new Map(), npcs=[], lamps=[], segs=[], cars=[];
+let destCache=new Map(), npcs=[], lamps=[], roadList=[];
 const inMap=(x,y)=>x>=0&&y>=0&&x<W&&y<H;
 
 function rebuildCity(){
@@ -267,22 +380,21 @@ function rebuildRoads(){
   road.set(starterRoad);
   for (const key in S.dbRoads){ const m=/^r_(\d+)_(\d+)$/.exec(key); if (!m) continue; const cx=+m[1],cy=+m[2];
     for (const li of S.dbRoads[key]){ const x=cx*CH+li%CH, y=cy*CH+Math.floor(li/CH); if (inMap(x,y)) road[y*W+x]=1; } }
-  // street lamps and traffic follow the road network
-  lamps=[]; segs=[];
-  for (let y=0;y<H;y++) for (let x=0;x<W;x++){ const i=y*W+x; if (!road[i]) continue;
+  // roads never run through buildings or water
+  for (let i=0;i<W*H;i++) if (occ[i]>=0||water[i]) road[i]=0;
+  lamps=[]; roadList=[];
+  for (let y=0;y<H;y++) for (let x=0;x<W;x++){ const i=y*W+x; if (!road[i]) continue; roadList.push(i);
     if (hash2(x,y,404)<.14){ const edge = !(y>0&&road[i-W]) ? 0 : !(y<H-1&&road[i+W]) ? 1 : !(x>0&&road[i-1]) ? 2 : !(x<W-1&&road[i+1]) ? 3 : -1; if (edge>=0) lamps.push({x,y,edge}); } }
-  for (let y=0;y<H;y++){ let s=-1; for (let x=0;x<=W;x++){ const on = x<W && road[y*W+x]; if (on && s<0) s=x; if (!on && s>=0){ if (x-s>=6) segs.push({ax:"x",c:y,a:s,b:x-1}); s=-1; } } }
-  for (let x=0;x<W;x++){ let s=-1; for (let y=0;y<=H;y++){ const on = y<H && road[y*W+x]; if (on && s<0) s=y; if (!on && s>=0){ if (y-s>=6) segs.push({ax:"y",c:x,a:s,b:y-1}); s=-1; } } }
-  cars=[]; const CAR_COL=["#d4685a","#e8b44a","#6f9fc8","#8f8fa3","#f2efe8","#5d8b57","#9a7cc9","#3f4a5a"];
-  segs.forEach((sg,si)=>{ const n=Math.max(1,Math.round((sg.b-sg.a)/14)); for (let k=0;k<n && cars.length<90;k++){ const h=hash2(si,k,99); cars.push({sg, ph:h*1000, sp:1.4+h*1.2, col:CAR_COL[Math.floor(hash2(si,k,7)*CAR_COL.length)], bus:hash2(si,k,5)<.08}); } });
+  fireCache=new Map();
   chunkCache.clear(); overviewDirty=true;
 }
-function setBuildings(list){
+function setBuildings
+(list){
   const starters=STARTER.map(([id,type,dx,dy])=>({id,type,x:TOWN.x+dx,y:TOWN.y+dy,by:null,starter:true}));
   const seen=new Set(), valid=[];
   for (const b of list){ if (!TYPES[b.type]||TYPES[b.type].starter) continue; if (!Number.isInteger(b.x)||!Number.isInteger(b.y)||!inMap(b.x,b.y)) continue; if (seen.has(b.id)) continue; seen.add(b.id); valid.push(b); }
   valid.sort((a,b)=>(a.at||0)-(b.at||0)||(a.id<b.id?-1:1));
-  S.buildings=starters.concat(valid); rebuildCity();
+  S.buildings=starters.concat(valid); rebuildCity(); rebuildRoads();
 }
 
 /* bonus: places to relax nearby (service radius) + road access */
@@ -510,8 +622,8 @@ function drawBuilding(g,type,bx,by,night,seed){
       box(g,x+1.1,y+1.1,.12,.12,12,"#5d8b57",null,{}); box(g,x+1.6,y+1.1,.12,.12,12,"#5d8b57",null,{}); poly(g,[P(x+1.1,y+1.1,12),P(x+1.72,y+1.1,12),P(x+1.72,y+1.22,12),P(x+1.1,y+1.22,12)],"#3f6a3a");
       break; }
     case "farm":{
-      poly(g,[P(x,y),P(x+ww,y),P(x+ww,y+hh),P(x,y+hh)],"#c9b07a");
-      for (let r=0;r<7;r++){ const v=y+.2+r*(hh*.62/7); poly(g,[P(x+.2,v),P(x+ww*.95,v),P(x+ww*.95,v+.22),P(x+.2,v+.22)], r%2?"#9fb86a":"#d8c46a"); }
+      poly(g,[P(x,y),P(x+ww,y),P(x+ww,y+hh),P(x,y+hh)],shadeHex(t.roof,.85));
+      for (let r=0;r<7;r++){ const v=y+.2+r*(hh*.62/7); poly(g,[P(x+.2,v),P(x+ww*.95,v),P(x+ww*.95,v+.22),P(x+.2,v+.22)], r%2?t.wall:t.roof); }
       box(g,x+.3,y+hh-1.4,1.3,1.1,14,"#b5503f",null,{door:true}); gableRoof(g,x+.3,y+hh-1.4,1.3,1.1,14,10,"#4b3b36","#b5503f");
       box(g,x+ww-.9,y+hh-1.1,.5,.5,26,"#d8d2c4","#b8b2a4",{});
       break; }
@@ -527,7 +639,86 @@ function drawBuilding(g,type,bx,by,night,seed){
       box(g,x+ww-.9,y+.3,.6,.6,22,"#7a5a3a",null,{});
       for (let k=0;k<3;k++){ const a=P(x+.3+k*.5,y+hh-.4,0); g.fillStyle="#6b625b"; g.fillRect(a[0]-4,a[1]-4,8,4); }
       break; }
+    case "pool":{
+      poly(g,[P(x,y),P(x+ww,y),P(x+ww,y+hh),P(x,y+hh)],t.wall);
+      poly(g,[P(x+.35,y+.35),P(x+ww-.35,y+.35),P(x+ww-.35,y+hh-.7),P(x+.35,y+hh-.7)],t.roof);
+      g.strokeStyle="rgba(255,255,255,.7)"; g.lineWidth=1;
+      for (let k=1;k<4;k++){ const v=y+.35+k*(hh-1.05)/4, a=P(x+.45,v), b2=P(x+ww-.45,v); g.beginPath(); g.moveTo(a[0],a[1]); g.lineTo(b2[0],b2[1]); g.stroke(); }
+      box(g,x+.25,y+hh-.55,1,.4,10,"#efe6d6","#d4685a",{});
+      break; }
+    case "stadium":{
+      box(g,x,y,ww,hh,t.H,t.wall,t.roof,{});
+      poly(g,[P(x+.5,y+.5,t.H),P(x+ww-.5,y+.5,t.H),P(x+ww-.5,y+hh-.5,t.H),P(x+.5,y+hh-.5,t.H)],"#6fae5a");
+      poly(g,[P(x+.9,y+.9,t.H),P(x+ww-.9,y+.9,t.H),P(x+ww-.9,y+hh-.9,t.H),P(x+.9,y+hh-.9,t.H)],"#7dbb67");
+      { const m0=P(x+ww/2,y+.9,t.H), m1=P(x+ww/2,y+hh-.9,t.H), mc=P(x+ww/2,y+hh/2,t.H); g.strokeStyle="#f4f4ee"; g.lineWidth=1.2; g.beginPath(); g.moveTo(m0[0],m0[1]); g.lineTo(m1[0],m1[1]); g.stroke(); g.beginPath(); g.ellipse(mc[0],mc[1],12,6,0,0,7); g.stroke(); }
+      for (const [a,b2] of [[0,0],[1,0],[0,1],[1,1]]) box(g,x+a*(ww-.2),y+b2*(hh-.2),.2,.2,t.H+34,"#8a8a8a","#f4f0d8",{});
+      break; }
+    case "plaza":{
+      poly(g,[P(x,y),P(x+ww,y),P(x+ww,y+hh),P(x,y+hh)],t.wall);
+      if (t.name==="Skate Park"){
+        box(g,x+.3,y+.3,1.1,.6,6,"#b5b0a8","#d6d1c8",{}); box(g,x+ww-1.4,y+hh-.9,1.1,.6,4,"#b5b0a8","#d6d1c8",{});
+        const c=P(x+ww/2,y+hh/2); g.fillStyle="#a8a29a"; g.beginPath(); g.ellipse(c[0],c[1],14,7,0,0,7); g.fill(); g.fillStyle="#8f8a83"; g.beginPath(); g.ellipse(c[0],c[1]+1,9,4.5,0,0,7); g.fill();
+      } else {
+        const c=P(x+ww/2,y+hh/2); g.fillStyle="#cfc6b4"; g.beginPath(); g.ellipse(c[0],c[1],13,6.5,0,0,7); g.fill(); g.fillStyle="#9fc7e0"; g.beginPath(); g.ellipse(c[0],c[1],9,4.5,0,0,7); g.fill();
+        box(g,x+ww/2-.08,y+hh/2-.08,.16,.16,9,"#e9e3d6","#ffffff",{});
+        for (const [a,b2] of [[.2,.2],[.8,.2],[.2,.8],[.8,.8]]){ const p=P(x+ww*a,y+hh*b2); treeAt(g,p[0],p[1],false); }
+        box(g,x+ww*.4,y+hh-.5,.6,.15,3,"#8a6a4a","#a5825c",{});
+      }
+      break; }
+    case "fair":{
+      poly(g,[P(x,y),P(x+ww,y),P(x+ww,y+hh),P(x,y+hh)],t.wall);
+      { const tc=P(x+ww*.3,y+hh*.7); g.fillStyle="#d4685a"; g.beginPath(); g.moveTo(tc[0],tc[1]-26); g.lineTo(tc[0]+16,tc[1]); g.lineTo(tc[0]-16,tc[1]); g.closePath(); g.fill();
+        g.fillStyle="#fbf6ec"; g.beginPath(); g.moveTo(tc[0],tc[1]-26); g.lineTo(tc[0]+6,tc[1]); g.lineTo(tc[0]-2,tc[1]); g.closePath(); g.fill(); }
+      { const c=P(x+ww*.65,y+hh*.35), r=24, cy=c[1]-r-6, rot=performance.now()/4000;
+        g.strokeStyle="#6b6b78"; g.lineWidth=1.5; g.beginPath(); g.moveTo(c[0]-10,c[1]); g.lineTo(c[0],cy); g.lineTo(c[0]+10,c[1]); g.stroke();
+        g.strokeStyle="#8a8a96"; g.lineWidth=1.2; g.beginPath(); g.arc(c[0],cy,r,0,7); g.stroke();
+        for (let k=0;k<8;k++){ const a=rot+k*Math.PI/4, px=c[0]+Math.cos(a)*r, py=cy+Math.sin(a)*r; g.beginPath(); g.moveTo(c[0],cy); g.lineTo(px,py); g.stroke(); g.fillStyle=["#d4685a","#e8b44a","#6f9fc8","#5d8b57"][k%4]; g.fillRect(px-2.5,py,5,4); } }
+      break; }
+    case "wind":{
+      poly(g,[P(x,y),P(x+ww,y),P(x+ww,y+hh),P(x,y+hh)],t.wall);
+      const rot=performance.now()/600;
+      for (const [a,b2] of [[.25,.3],[.7,.45],[.35,.8]]){ const p=P(x+ww*a,y+hh*b2);
+        g.strokeStyle="#ebe8e1"; g.lineWidth=2.4; g.beginPath(); g.moveTo(p[0],p[1]); g.lineTo(p[0],p[1]-46); g.stroke();
+        g.lineWidth=1.8; for (let k=0;k<3;k++){ const an=rot+k*2.094; g.beginPath(); g.moveTo(p[0],p[1]-46); g.lineTo(p[0]+Math.cos(an)*18,p[1]-46+Math.sin(an)*18); g.stroke(); }
+        g.fillStyle="#d8d4cc"; g.beginPath(); g.arc(p[0],p[1]-46,2.2,0,7); g.fill(); }
+      break; }
+    case "orchard":{
+      poly(g,[P(x,y),P(x+ww,y),P(x+ww,y+hh),P(x,y+hh)],t.wall);
+      const palm=t.biome&&t.biome[0]===2;
+      for (let r=0;r<3;r++) for (let c=0;c<3;c++){ const p=P(x+(c+.5)*ww/3,y+(r+.5)*hh/3); treeAt(g,p[0],p[1],palm,!palm); }
+      break; }
+    case "glass":{
+      poly(g,[P(x,y),P(x+ww,y),P(x+ww,y+hh),P(x,y+hh)],"#c9b98a");
+      for (let k=0;k<4;k++){ const p=P(x+.4+k*(ww-.8)/3,y+hh*.5); g.fillStyle="#5d8b57"; g.beginPath(); g.arc(p[0],p[1]-3,3.5,0,7); g.fill(); }
+      g.globalAlpha=.62; box(g,x,y,ww,hh,t.H,t.wall,null,{}); gableRoof(g,x,y,ww,hh,t.H,10,t.roof,t.wall); g.globalAlpha=1;
+      g.strokeStyle="rgba(255,255,255,.7)"; g.lineWidth=.8; for (let k=1;k<4;k++){ const a=P(x+k*ww/4,y+hh,0), b2=P(x+k*ww/4,y+hh,t.H); g.beginPath(); g.moveTo(a[0],a[1]); g.lineTo(b2[0],b2[1]); g.stroke(); }
+      break; }
   }
+  if (t.sign && BOXY.has(t.style)) drawSign(g,t,x,y,ww,hh,seed);
+}
+const BOXY=new Set(["gable","civic","shop","flat","factory","dome"]);
+/* name board on the building's front face (or on the roof edge for tall flat buildings) */
+function drawSign(g,t,x,y,ww,hh,seed){
+  const fs=6.4, roof=(t.style==="flat"||t.style==="factory");
+  const z = t.style==="shop" ? t.H*.84 : roof ? t.H+6 : t.H*.7;
+  g.save(); g.font="800 "+fs+"px Nunito, system-ui, sans-serif";
+  const tw=g.measureText(t.sign).width, maxw=ww*T*.92, bw=Math.min(tw+7,maxw);
+  const o=P(x+ww/2,y+hh,z); g.translate(o[0],o[1]); g.transform(1,.5,0,1,0,0);
+  if (roof){ g.fillStyle="#5a524c"; g.fillRect(-bw/2+3,0,1.2,6); g.fillRect(bw/2-4.2,0,1.2,6); }
+  const dark=(seed||0)%3===0 || t.wall==="#f1efea";
+  g.fillStyle=dark?"#3b322c":"#fbf6ec"; g.beginPath(); g.roundRect?g.roundRect(-bw/2,-5,bw,10,2.5):g.rect(-bw/2,-5,bw,10); g.fill();
+  g.strokeStyle="rgba(0,0,0,.15)"; g.lineWidth=.6; g.stroke();
+  g.fillStyle=dark?"#f7f2e6":(t.awning||t.roof); g.textAlign="center"; g.textBaseline="middle";
+  if (tw>bw-5) g.scale((bw-5)/tw,1);
+  g.fillText(t.sign,0,.4); g.restore();
+}
+function treeAt(g,X,Y,palm,fruit){
+  g.fillStyle="rgba(60,70,40,.18)"; g.beginPath(); g.ellipse(X+3,Y+1,6,2.6,0,0,7); g.fill();
+  if (palm){ g.strokeStyle="#8a6a45"; g.lineWidth=1.8; g.beginPath(); g.moveTo(X,Y); g.quadraticCurveTo(X+3,Y-8,X+1,Y-16); g.stroke();
+    g.fillStyle="#5f8f4a"; for (let k=0;k<5;k++){ const a=-Math.PI/2+(k-2)*.7; g.beginPath(); g.ellipse(X+1+Math.cos(a)*5,Y-16+Math.sin(a)*3+2,6,1.8,a,0,7); g.fill(); } return; }
+  g.fillStyle="#6b5544"; g.fillRect(X-.8,Y-7,1.6,7);
+  g.fillStyle="#4f7a45"; g.beginPath(); g.arc(X,Y-11,5.5,0,7); g.fill();
+  if (fruit){ g.fillStyle="#d4574a"; for (let k=0;k<4;k++){ g.beginPath(); g.arc(X-3+k*2,Y-12+(k%2)*3,1,0,7); g.fill(); } }
 }
 
 /* ============================================================
@@ -550,18 +741,173 @@ function label(g,ix,iy,text,z,dark,small){
   g.fillStyle=dark?"#f7f2e6":"#3b322c"; g.fillText(text,ix,iy+fs*.05);
   return h;
 }
-function carState(c,now){
-  const sg=c.sg, L=sg.b-sg.a; if (L<=0) return null;
-  const d=((now/1000)*c.sp+c.ph)%(2*L), fwd=d<L, p=fwd?sg.a+d:sg.b-(d-L)+0;
-  const lane=fwd?.68:.32;
-  return sg.ax==="x" ? {tx:p+.5, ty:sg.c+lane, ax:"x", fwd} : {tx:sg.c+(1-lane), ty:p+.5, ax:"y", fwd};
+/* ============================================================
+   TRAFFIC: cars keep to their lane, queue, give way at junctions,
+   and now and then someone doesn't, which causes a crash and a jam
+   ============================================================ */
+const DX=[1,0,-1,0], DY=[0,1,0,-1];
+const isRoad=(x,y)=>inMap(x,y)&&road[y*W+x]===1;
+function roadExits(x,y){ const o=[]; for (let d=0;d<4;d++) if (isRoad(x+DX[d],y+DY[d])) o.push(d); return o; }
+function pickOut(x,y,din){ const o=roadExits(x,y), back=(din+2)%4, f=o.filter(d=>d!==back); if (!f.length) return o.length?o[0]:back; if (f.includes(din)&&Math.random()<.6) return din; return f[Math.random()*f.length|0]; }
+const CAR_COL=["#d4685a","#e8b44a","#6f9fc8","#8f8fa3","#f2efe8","#5d8b57","#9a7cc9","#3f4a5a","#c97a9a"];
+let traffic=[], accidents=[], carSeq=1, accSeq=1, lastCrash=-1e9;
+const CRASH_GAP=75000;
+function spawnCar(){
+  for (let tries=0;tries<12;tries++){
+    const i=roadList[Math.random()*roadList.length|0]; if (i==null) return;
+    const x=i%W, y=(i/W)|0, o=roadExits(x,y); if (!o.length||traffic.some(c=>c.x===x&&c.y===y)) continue;
+    const din=o[Math.random()*o.length|0];
+    traffic.push({id:carSeq++,x,y,din,dout:pickOut(x,y,din),p:.05,v:0,vmax:1.5+Math.random()*.9,col:CAR_COL[Math.random()*CAR_COL.length|0],bus:Math.random()<.07,state:"drive",wait:0,conf:-1});
+    return;
+  }
 }
-function drawCar(g,c,st,night){
-  const l=c.bus?1.1:.55, w=.3, x=st.ax==="x"?st.tx-l/2:st.tx-w/2, y=st.ax==="x"?st.ty-w/2:st.ty-l/2;
-  const bw=st.ax==="x"?l:w, bh=st.ax==="x"?w:l, col=c.bus?"#e8b44a":c.col;
-  box(g,x,y,bw,bh,5,col,shadeHex(col,1.08),{});
-  if (!c.bus) box(g,x+bw*.22,y+bh*.22,bw*.56,bh*.56,0,col,null,{}), poly(g,[P(x+bw*.25,y+bh*.25,8),P(x+bw*.75,y+bh*.25,8),P(x+bw*.75,y+bh*.75,8),P(x+bw*.25,y+bh*.75,8)],shadeHex(col,.85)), poly(g,[P(x+bw*.25,y+bh*.75,5),P(x+bw*.75,y+bh*.75,5),P(x+bw*.75,y+bh*.75,8),P(x+bw*.25,y+bh*.75,8)],"#9db4c8");
-  else for (let k=0;k<4;k++){ const u=x+.1+k*(bw-.2)/4; if (st.ax==="x") poly(g,[P(u,y+bh,2.5),P(u+.15,y+bh,2.5),P(u+.15,y+bh,4.2),P(u,y+bh,4.2)],"#5d6b78"); }
+function carPos(c){ const d=c.p<.5?c.din:c.dout, t=c.p-.5; return {tx:c.x+.5+DX[d]*t-DY[d]*.22, ty:c.y+.5+DY[d]*t+DX[d]*.22, d}; }
+function activeCrashes(){ return accidents.filter(a=>a.state!=="done"); }
+function updateTraffic(dt,now){
+  const want=Math.min(70,Math.round(roadList.length/6));
+  if (traffic.length<want && Math.random()<dt*3) spawnCar();
+  const at=new Map(); for (const c of traffic){ const i=c.y*W+c.x; let a=at.get(i); if (!a) at.set(i,a=[]); a.push(c); }
+  const live=activeCrashes(), crashTiles=new Set(live.map(a=>a.y*W+a.x));
+  for (const c of traffic){
+    if (c.state!=="drive") continue;
+    if (!isRoad(c.x,c.y)){ c.dead=true; continue; }
+    let block=false; const cd=c.p<.5?c.din:c.dout;
+    for (const o of at.get(c.y*W+c.x)||[]){ if (o===c) continue;
+      if (o.state!=="drive"){ if (o.p>c.p-.05) block=true; continue; }
+      const od=o.p<.5?o.din:o.dout; if (od===cd&&o.p>c.p&&o.p-c.p<.42) block=true; }
+    const nx=c.x+DX[c.dout], ny=c.y+DY[c.dout], ni=ny*W+nx, room=1-c.p;
+    if (!block && c.p>.45){
+      if (crashTiles.has(ni)&&room<.4) block=true;
+      const there=at.get(ni)||[];
+      for (const o of there){ if (o.state!=="drive"){ if (room<.4) block=true; continue; } if (o.din===c.dout&&room+o.p<.45) block=true; }
+      if (!block && room<.32 && roadExits(nx,ny).length>=3){
+        const cross=there.find(o=>o.state==="drive"&&o.din!==c.dout&&o.din!==(c.dout+2)%4);
+        if (cross){
+          if (c.conf!==ni){ c.conf=ni;
+            if (now-lastCrash>CRASH_GAP && live.length<2 && Math.random()<.12){ crash(c,cross,nx,ny,now); continue; } }
+          if (c.wait<5) block=true;
+        }
+      }
+    }
+    if (block){ c.v=0; c.wait+=dt; if (c.wait>50&&!live.length) c.dead=true; continue; }
+    c.wait=Math.max(0,c.wait-dt); c.v=Math.min(c.vmax,c.v+dt*2.5); c.p+=c.v*dt;
+    if (c.p>=1){ c.p-=1; c.x=nx; c.y=ny; c.din=c.dout; if (!isRoad(c.x,c.y)){ c.dead=true; continue; } c.dout=pickOut(c.x,c.y,c.din); c.conf=-1; }
+  }
+  for (const a of accidents){
+    if (a.state==="waiting" && a.unit && now>=a.unit.arrive) a.state="clearing";
+    if (a.state!=="done" && now>=a.clearAt){ a.state="done"; for (const c of a.cars) c.dead=true;
+      toast(a.unit?"Police cleared the crash near the "+a.near+". Traffic is moving again.":"The crash near the "+a.near+" was towed away."); }
+  }
+  traffic=traffic.filter(c=>!c.dead);
+  accidents=accidents.filter(a=>a.state!=="done"||(a.unit&&now<a.unit.back));
+}
+function crash(c,o,x,y,now){
+  c.x=x; c.y=y; c.din=c.dout; c.p=.32; c.state=o.state="crashed"; c.v=o.v=0; lastCrash=now;
+  const a={id:accSeq++,x,y,cars:[c,o],state:"waiting",t0:now,near:nearestName(x,y)};
+  const st=nearestOf("police",x,y); let path=null;
+  if (st){ const s=roadNear(st); if (s>=0) path=bfs(s,y*W+x); }
+  if (path){ a.unit=mkUnit("police",path,now+2500,5,6000); a.clearAt=a.unit.workEnd; toast("Crash near the "+a.near+"! Police are on the way."); }
+  else { a.clearAt=now+90000; toast("Crash near the "+a.near+". Build a Police Station to clear crashes faster."); }
+  accidents.push(a);
+}
+function nearestOf(type,x,y){ let best=null,bd=1e9; for (const b of S.buildings){ if (b.type!==type) continue; const t=TYPES[b.type], d=Math.hypot(b.x+t.size[0]/2-x,b.y+t.size[1]/2-y); if (d<bd){ bd=d; best=b; } } return best; }
+function nearestName(x,y){ let best="road",bd=1e9; for (const b of S.buildings){ const t=TYPES[b.type], d=Math.hypot(b.x+t.size[0]/2-x,b.y+t.size[1]/2-y); if (d<bd){ bd=d; best=t.name; } } return best; }
+function roadNear(b){
+  const [w,h]=TYPES[b.type].size, dx=b.x+w/2, dy=b.y+h;
+  let best=-1, bd=1e9;
+  for (let y=b.y-6;y<b.y+h+6;y++) for (let x=b.x-6;x<b.x+w+6;x++){ if (!isRoad(x,y)) continue;
+    const ring=Math.max(b.x-x, x-(b.x+w-1), b.y-y, y-(b.y+h-1), 0), d=ring*100+Math.hypot(x+.5-dx,y+.5-dy);
+    if (d<bd){ bd=d; best=y*W+x; } }
+  return best;
+}
+function bfs(a,z){
+  if (a===z) return [a];
+  const prev=new Int32Array(W*H).fill(-1), q=new Int32Array(W*H); let h=0,t=0; prev[a]=a; q[t++]=a;
+  while (h<t){ const i=q[h++]; if (i===z) break; const x=i%W, y=(i/W)|0;
+    for (let d=0;d<4;d++){ const nx=x+DX[d], ny=y+DY[d]; if (!isRoad(nx,ny)) continue; const j=ny*W+nx; if (prev[j]!==-1) continue; prev[j]=i; q[t++]=j; } }
+  if (prev[z]===-1) return null;
+  const path=[]; for (let i=z;i!==a;i=prev[i]) path.push(i); path.push(a); return path.reverse();
+}
+/* an emergency vehicle: drives out along a road path, works on site, drives back */
+function mkUnit(kind,path,t0,speed,work){ const travel=Math.max(0,path.length-1)/speed*1000; return {kind,path,t0,speed,arrive:t0+travel,workEnd:t0+travel+work,back:t0+2*travel+work}; }
+function unitPos(u,now){
+  if (now<u.t0||now>=u.back) return null;
+  const L=u.path.length-1;
+  if (L<=0){ const p=u.path[0]; return {tx:p%W+.5,ty:((p/W)|0)+.5,d:0}; }
+  let s = now<u.arrive ? (now-u.t0)/1000*u.speed : now<u.workEnd ? L : L-(now-u.workEnd)/1000*u.speed;
+  s=Math.max(0,Math.min(L,s)); const i=Math.min(L-1,Math.floor(s)), f=s-i;
+  const a=u.path[i], b=u.path[i+1], ax=a%W, ay=(a/W)|0, bx=b%W, by=(b/W)|0;
+  let d = bx>ax?0 : by>ay?1 : bx<ax?2 : 3; if (now>=u.workEnd) d=(d+2)%4;
+  return {tx:ax+.5+(bx-ax)*f, ty:ay+.5+(by-ay)*f, d};
+}
+
+/* ============================================================
+   FIRES: decided by the clock, so every screen sees the same fire
+   ============================================================ */
+const FIRE_SLOT=150000, NOBURN=new Set(["park","playground","farm","solar","mine","pool","plaza","stadium","orchard","wind","fair"]);
+let fireCache=new Map(); const shownToasts=new Set();
+function fireEvent(k){
+  if (fireCache.has(k)) return fireCache.get(k);
+  let ev=null;
+  if (hash2(k,1,SEED+77)<.6){
+    const cand=S.buildings.filter(b=>!NOBURN.has(TYPES[b.type].style)&&b.type!=="fire");
+    if (cand.length){
+      const b=cand[Math.floor(hash2(k,3,SEED+77)*cand.length)], t0=k*FIRE_SLOT+Math.floor(hash2(k,2,SEED+77)*60000);
+      ev={k,b,t0,near:TYPES[b.type].name};
+      const st=nearestOf("fire",b.x,b.y); let path=null;
+      if (st){ const s=roadNear(st), z=roadNear(b); if (s>=0&&z>=0) path=bfs(s,z); }
+      if (path){ ev.unit=mkUnit("fire",path,t0+4000,4.5,9000); ev.tOut=ev.unit.workEnd; } else ev.tOut=t0+60000;
+    }
+  }
+  fireCache.set(k,ev); return ev;
+}
+function fireEvents(now){ const k=Math.floor(now/FIRE_SLOT), out=[]; for (const kk of [k-1,k]){ const e=fireEvent(kk); if (e&&now>=e.t0&&now<Math.max(e.tOut,e.unit?e.unit.back:0)) out.push(e); } return out; }
+function burningMap(now){ const m=new Map(); for (const e of fireEvents(now)) if (now<e.tOut) m.set(e.b.id,e); return m; }
+function incidentToasts(now){
+  for (const e of fireEvents(now)){
+    const k1="f"+e.k, k2="o"+e.k;
+    if (now<e.tOut && !shownToasts.has(k1)){ shownToasts.add(k1); toast("Fire at the "+e.near+"! "+(e.unit?"The fire brigade is on the way.":"There's no fire station to send help.")); }
+    if (now>=e.tOut && shownToasts.has(k1) && !shownToasts.has(k2)){ shownToasts.add(k2); toast("The fire at the "+e.near+" is out."); }
+  }
+}
+
+/* vehicles */
+function drawVehicle(g,tx,ty,d,kind,col){
+  const along=d%2===0, big=kind==="fire"||kind==="bus";
+  const len=kind==="bus"?1.1:kind==="fire"?1.05:kind==="police"?.6:.55, wid=big?.36:.3, hh=big?8:5;
+  const bw=along?len:wid, bh=along?wid:len, x=tx-bw/2, y=ty-bh/2;
+  const c=kind==="police"?"#f2f2f2":kind==="fire"?"#d23b2f":kind==="bus"?"#e8b44a":col;
+  box(g,x,y,bw,bh,hh,c,shadeHex(c,1.06),{});
+  const flash=(performance.now()/160|0)%2;
+  if (kind==="car"||kind==="police"){ const k=.22;
+    poly(g,[P(x+bw*k,y+bh*k,hh+3),P(x+bw*(1-k),y+bh*k,hh+3),P(x+bw*(1-k),y+bh*(1-k),hh+3),P(x+bw*k,y+bh*(1-k),hh+3)],kind==="police"?"#2f4f8a":shadeHex(c,.85));
+    poly(g,[P(x+bw*k,y+bh*(1-k),hh),P(x+bw*(1-k),y+bh*(1-k),hh),P(x+bw*(1-k),y+bh*(1-k),hh+3),P(x+bw*k,y+bh*(1-k),hh+3)],"#9db4c8"); }
+  if (kind==="police"){ const c0=P(tx,ty,hh+4.5); g.fillStyle=flash?"#ff4d4d":"#4d7dff"; g.fillRect(c0[0]-3.5,c0[1]-2,3.5,2.2); g.fillStyle=flash?"#4d7dff":"#ff4d4d"; g.fillRect(c0[0],c0[1]-2,3.5,2.2); }
+  if (kind==="fire"){
+    const p0=P(along?x+.12:tx, along?ty:y+.12, hh+1.6), p1=P(along?x+bw-.12:tx, along?ty:y+bh-.12, hh+1.6);
+    g.strokeStyle="#e4e4e4"; g.lineWidth=2.6; g.beginPath(); g.moveTo(p0[0],p0[1]); g.lineTo(p1[0],p1[1]); g.stroke();
+    g.strokeStyle="#9a9a9a"; g.lineWidth=.7; g.stroke();
+    const c0=P(tx,ty,hh+1); g.fillStyle=flash?"#ff5a3a":"#ffffff"; g.fillRect(c0[0]-2,c0[1]-3,4,2);
+  }
+  if (kind==="bus"&&along) for (let k=0;k<4;k++){ const u=x+.1+k*(bw-.2)/4; poly(g,[P(u,y+bh,3),P(u+.16,y+bh,3),P(u+.16,y+bh,5.5),P(u,y+bh,5.5)],"#5d6b78"); }
+}
+function drawFire(g,b,spraying){
+  const t=TYPES[b.type],[w,h]=t.size, top=(t.H||10)+(t.RH||0)*.5, c=P(b.x+w/2,b.y+h/2,top), tt=performance.now()/1000;
+  for (let k=0;k<7;k++){ const ph=(tt*.45+k/7)%1; g.fillStyle="rgba(80,74,74,"+(.5*(1-ph)).toFixed(3)+")"; g.beginPath(); g.arc(c[0]+Math.sin(k*2+tt)*5+ph*16,c[1]-12-ph*70,5+ph*13,0,7); g.fill(); }
+  const n=spraying?3:5;
+  for (let k=0;k<n;k++){ const ox=(k-(n-1)/2)*w*3.4, fl=(spraying?7:11)+Math.sin(tt*9+k*1.7)*3.5; flame(g,c[0]+ox,c[1]+Math.abs(k-(n-1)/2)*2.5,fl,k%2?"#ffb03b":"#ff6a2b"); }
+}
+function flame(g,x,y,hgt,col){
+  g.fillStyle=col; g.beginPath(); g.moveTo(x-4.5,y); g.quadraticCurveTo(x-4.5,y-hgt*.6,x,y-hgt); g.quadraticCurveTo(x+4.5,y-hgt*.6,x+4.5,y); g.closePath(); g.fill();
+  g.fillStyle="#ffe08a"; g.beginPath(); g.moveTo(x-2,y); g.quadraticCurveTo(x-2,y-hgt*.35,x,y-hgt*.55); g.quadraticCurveTo(x+2,y-hgt*.35,x+2,y); g.closePath(); g.fill();
+}
+function drawCrashMarker(g,a){
+  const p=P(a.x+.5,a.y+.5), tt=performance.now()/1000;
+  for (let k=0;k<4;k++){ const ph=(tt*.6+k/4)%1; g.fillStyle="rgba(120,115,110,"+(.45*(1-ph)).toFixed(3)+")"; g.beginPath(); g.arc(p[0]+ph*8,p[1]-8-ph*30,3+ph*7,0,7); g.fill(); }
+  const y=p[1]-30-Math.abs(Math.sin(tt*3))*2;
+  g.fillStyle="#e8a33a"; g.beginPath(); g.moveTo(p[0],y-9); g.lineTo(p[0]+8,y+5); g.lineTo(p[0]-8,y+5); g.closePath(); g.fill();
+  g.fillStyle="#3b322c"; g.fillRect(p[0]-.9,y-4,1.8,5); g.fillRect(p[0]-.9,y+2,1.8,1.6);
+  if (a.state==="clearing") for (const [ox,oy] of [[-.35,-.35],[.35,-.35],[-.35,.35],[.35,.35]]){ const q=P(a.x+.5+ox,a.y+.5+oy); g.fillStyle="#f08a3a"; g.beginPath(); g.moveTo(q[0],q[1]-6); g.lineTo(q[0]+2.4,q[1]); g.lineTo(q[0]-2.4,q[1]); g.closePath(); g.fill(); g.fillStyle="#fff"; g.fillRect(q[0]-1.4,q[1]-3.4,2.8,1); }
 }
 
 /* ============================================================
@@ -629,20 +975,29 @@ function draw(now){
   hitBuildings=[];
   for (let bi=0;bi<S.buildings.length;bi++){ const b=S.buildings[bi], t=TYPES[b.type], cp=P(b.x+t.size[0]/2,b.y+t.size[1]/2);
     if (!vis(cp[0],cp[1],t.size[0]*T*2)) continue; items.push({d:b.x+t.size[0]+b.y+t.size[1]-.5, b, bi}); }
+  const fires=fireEvents(now), burning=burningMap(now);
+  const units=[]; for (const a of accidents) if (a.unit) units.push(a.unit); for (const e of fires) if (e.unit) units.push(e.unit);
+  for (const u of units){ const st=unitPos(u,now); if (!st) continue; items.push({d:st.tx+st.ty+.35,veh:{kind:u.kind,tx:st.tx,ty:st.ty,d:st.d}}); }
   const ppl=everyone(now);
   for (const p of ppl) items.push({d:(p.x+p.y)/T+.2, p});
   if (z>.5){
     for (const n of npcs){ const st=autoState(n.id,{x:n.home.x+1,y:n.home.y+1},now); if (!vis(isoX(st.x,st.y),isoY(st.x,st.y),40)) continue; if (st.act&&st.act.startsWith("Asleep")) continue; items.push({d:(st.x+st.y)/T+.2,n,st}); }
-    for (const car of cars){ const st=carState(car,now); if (!st) continue; const ip=P(st.tx,st.ty); if (!vis(ip[0],ip[1],30)) continue; items.push({d:st.tx+st.ty+.3,car,st}); }
+    for (const car of traffic){ const st=carPos(car), ip=P(st.tx,st.ty); if (!vis(ip[0],ip[1],30)) continue; items.push({d:st.tx+st.ty+.3,veh:{kind:car.bus?"bus":"car",col:car.col,tx:st.tx,ty:st.ty,d:st.d}}); }
   }
   items.sort((a,b)=>a.d-b.d);
   hitPeople=[];
   for (const it of items){
-    if (it.b){ drawBuilding(ctx,it.b.type,it.b.x,it.b.y,lit,hashStr(it.b.id)); hitBuildings.push(it.bi); }
-    else if (it.car) drawCar(ctx,it.car,it.st,lit);
+    if (it.b){ drawBuilding(ctx,it.b.type,it.b.x,it.b.y,lit,hashStr(it.b.id)); hitBuildings.push(it.bi); const fe=burning.get(it.b.id); if (fe) drawFire(ctx,it.b,fe.unit&&now>=fe.unit.arrive); }
+    else if (it.veh) drawVehicle(ctx,it.veh.tx,it.veh.ty,it.veh.d,it.veh.kind,it.veh.col);
     else if (it.n){ drawPerson(ctx,isoX(it.st.x,it.st.y),isoY(it.st.x,it.st.y),it.n.color,{walking:it.st.walking}); }
     else { const p=it.p, ix=isoX(p.x,p.y), iy=isoY(p.x,p.y); drawPerson(ctx,ix,iy,p.rec.color||"#7b6a5a",{isMe:p.me,walking:p.walking}); hitPeople.push({id:p.id,ix,iy}); }
   }
+  // fire hoses and crash markers
+  for (const e of fires){ if (!e.unit||now<e.unit.arrive||now>=e.unit.workEnd) continue; const st=unitPos(e.unit,now); if (!st) continue;
+    const t=TYPES[e.b.type], a=P(st.tx,st.ty,10), b=P(e.b.x+t.size[0]/2,e.b.y+t.size[1]/2,(t.H||10)+(t.RH||0)*.5);
+    ctx.save(); ctx.strokeStyle="rgba(150,205,255,.95)"; ctx.lineWidth=2.2; ctx.setLineDash([4,3]); ctx.lineDashOffset=-performance.now()/25;
+    ctx.beginPath(); ctx.moveTo(a[0],a[1]); ctx.quadraticCurveTo((a[0]+b[0])/2,Math.min(a[1],b[1])-34,b[0],b[1]); ctx.stroke(); ctx.restore(); }
+  for (const a of accidents) if (a.state!=="done") drawCrashMarker(ctx,a);
   // placement ghost
   if (S.place && S.ghost){
     const t=TYPES[S.place], ok=canPlace(S.place,S.ghost.x,S.ghost.y).ok;
@@ -660,7 +1015,8 @@ function draw(now){
     if (z>.42){
       for (const L of lamps){ const [tx,ty]=lampPos(L), p=P(tx,ty); if (!vis(p[0],p[1],40)) continue; if (++n>260) break; glow(p[0],p[1]-14,26,"rgb(255,200,120)",.55*night); glow(p[0],p[1],34,"rgb(255,180,110)",.22*night); }
       for (const bi of hitBuildings){ const b=S.buildings[bi], t=TYPES[b.type], d=P(b.x+t.size[0]/2,b.y+t.size[1]+.2), hx=parseInt(t.glow.slice(1),16); glow(d[0],d[1]-6,30+t.size[0]*6,"rgb("+(hx>>16)+","+((hx>>8)&255)+","+(hx&255)+")",.45*night); }
-      for (const it of items){ if (!it.car) continue; const p=P(it.st.tx,it.st.ty); glow(p[0],p[1]-2,14,"rgb(255,230,180)",.5*night); }
+      for (const it of items){ if (!it.veh) continue; const p=P(it.veh.tx,it.veh.ty); if (it.veh.kind==="police"||it.veh.kind==="fire"){ const f=(performance.now()/160|0)%2; glow(p[0],p[1]-8,26,f?"rgb(255,80,80)":"rgb(80,120,255)",.7*night); } else glow(p[0],p[1]-2,14,"rgb(255,230,180)",.5*night); }
+      for (const e of fires){ if (now>=e.tOut) continue; const t=TYPES[e.b.type], p=P(e.b.x+t.size[0]/2,e.b.y+t.size[1]/2,(t.H||10)); glow(p[0],p[1],60,"rgb(255,140,60)",.8*night); }
     }
     ctx.globalCompositeOperation="source-over";
   }
@@ -727,7 +1083,7 @@ function buildingNear(wx,wy){
     if (tx>=b.x-1&&tx<=b.x+w+1&&ty>=b.y-1&&ty<=b.y+h+1){ const d=Math.hypot(tx-(b.x+w/2),ty-(b.y+h/2)); if (d<bd){ bd=d; best=b; } } }
   return best;
 }
-function startTask(b){ if (S.task) return; const t=TYPES[b.type], bon=bonusFor(b); S.task={b,start:performance.now(),secs:t.secs,reward:Math.round(t.reward*(1+bon.pct/100))}; S.target=null; showBuilding(b.id); }
+function startTask(b){ if (S.task) return; if (burningMap(Date.now()).has(b.id)){ toast("The "+TYPES[b.type].name+" is on fire. Wait for the fire brigade."); return; } const t=TYPES[b.type], bon=bonusFor(b); S.task={b,start:performance.now(),secs:t.secs,reward:Math.round(t.reward*(1+bon.pct/100))}; S.target=null; showBuilding(b.id); }
 function finishTask(){ const tk=S.task; S.task=null; S.me.credits+=tk.reward; S.me.earned=(S.me.earned||0)+tk.reward; S.me.tasks=(S.me.tasks||0)+1; markDirty(true); toast(TYPES[tk.b.type].act+" done","+"+tk.reward); if (S.sheet&&S.sheet.kind==="building") showBuilding(tk.b.id); }
 
 /* ============================================================
@@ -759,12 +1115,15 @@ function showBuilding(id){
     const rows=el("div",{class:"rows"});
     rows.append(el("div",null,el("span",null,"Activity"),el("span",null,t.act+" · "+t.secs+" sec")));
     rows.append(el("div",null,el("span",null,"Pays"),el("span",null,"+"+reward+" coins"+(bon.pct?" (incl. +"+bon.pct+"%)":""))));
-    rows.append(el("div",null,el("span",null,"Bonus"),el("span",null,(bon.roadOk?"Road access":"No road")+" · "+bon.leisure+" places to relax nearby")));
+    rows.append(el("div",null,el("span",null,"Bonus"),el("span",null,(bon.roadOk?"Road access":"No road")+" · "+bon.leisure+(bon.leisure===1?" place":" places")+" to relax nearby")));
     if (t.residents){ const living=npcs.filter(n=>n.home===b).length; rows.append(el("div",null,el("span",null,"Living here"),el("span",null,living+" of "+t.residents))); }
     const here=everyone(Date.now()).filter(p=>p.act&&p.act.endsWith(" at "+t.name)&&buildingNear(p.x,p.y)===b).map(p=>p.rec.name);
     if (here.length) rows.append(el("div",null,el("span",null,"Inside now"),el("span",null,here.join(", "))));
     body.append(rows);
-    if (S.task&&S.task.b===b){ body.append(el("div",{style:"display:grid;gap:6px"}, el("div",{class:"note",id:"taskLbl"},t.verb+"…"), el("div",{class:"bar"},el("i",{id:"taskBar"})))); }
+    const fe=burningMap(Date.now()).get(b.id);
+    if (fe){ body.append(el("div",{class:"rows"},el("div",null,el("span",null,"Status"),el("span",{style:"color:var(--coral)"},"On fire · "+(fe.unit?(Date.now()>=fe.unit.arrive?"firefighters at work":"fire brigade on the way"):"no fire station nearby"))))); }
+    if (fe&&S.playing){ body.append(el("button",{class:"dark",disabled:true},"Closed until the fire is out")); }
+    else if (S.task&&S.task.b===b){ body.append(el("div",{style:"display:grid;gap:6px"}, el("div",{class:"note",id:"taskLbl"},t.verb+"…"), el("div",{class:"bar"},el("i",{id:"taskBar"})))); }
     else if (S.playing){
       body.append(el("div",{class:"btnrow"}, near ? el("button",{class:"dark",onclick:()=>startTask(b)}, t.act+" · +"+reward) : el("button",{class:"dark",onclick:()=>{ S.target=door(b); S.follow=true; toast("Walking to the "+t.name); }}, "Walk here")));
     }
@@ -967,8 +1326,9 @@ function tick(nowP){
     $("weather").innerHTML=(night?ICON.moon:wth==="Drizzle"?ICON.rain:wth==="Cloudy"?ICON.cloud:ICON.sun)+"<span></span>"; $("weather").lastChild.textContent=wth;
     const c=screenToWorld(innerWidth/2,innerHeight/2); $("coords").textContent="X "+Math.floor(c.x/T-TOWN.x)+" · Y "+Math.floor(c.y/T-TOWN.y);
     const names=Object.keys(S.players).filter(id=>S.players[id]&&(id===S.uid?S.playing:(S.online[id]&&now-S.online[id].seen<15000))).map(id=>S.players[id].name);
-    $("liveWho").textContent=(names.length?names.join(" & ")+" in town":"nobody playing right now")+" · "+npcs.length+" townsfolk";
+    $("liveWho").textContent=(names.length?names.join(" & ")+" in town":"nobody playing right now")+" · "+npcs.length+" townsfolk"+(()=>{ const f=burningMap(now).size, c=activeCrashes().length; return (f?" · "+f+" fire"+(f>1?"s":""):"")+(c?" · "+c+" crash"+(c>1?"es":""):""); })();
   }
+  updateTraffic(dt,now); incidentToasts(now);
   draw(now);
   requestAnimationFrame(tick);
 }
