@@ -40,6 +40,9 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--gold);outline-o
 .round svg{width:22px;height:22px;stroke:var(--ink);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
 .round[aria-pressed=true]{background:var(--ink);}
 .round[aria-pressed=true] svg{stroke:var(--cream);}
+.ctl{position:fixed;z-index:5;left:max(12px,env(safe-area-inset-left,0px));bottom:calc(74px + env(safe-area-inset-bottom,0px));display:flex;align-items:center;gap:8px;padding:10px 16px 10px 12px;border-radius:999px;font-family:var(--display);font-weight:600;font-size:16px;color:var(--ink);}
+.ctl svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;}
+.ctl[aria-pressed=true]{background:var(--ink);color:var(--cream);border-color:var(--ink);}
 .coords{position:fixed;z-index:5;top:calc(12px + env(safe-area-inset-top,0px));left:max(12px,env(safe-area-inset-left,0px));background:rgb(239 231 214/.85);border-radius:12px;padding:6px 10px;font-family:var(--display);font-weight:600;font-size:13px;color:var(--muted);}
 
 /* bottom */
@@ -129,6 +132,7 @@ input[type=text]:focus{border-color:var(--gold);outline:none;}
 <div id="nogl" hidden>This town needs WebGL, which this browser has turned off.</div>
 
 <div class="coords" id="coords">X 0 · Y 0</div>
+<button class="panel ctl" id="ctlBtn" aria-pressed="false" hidden><svg viewBox="0 0 24 24"><rect x="2.5" y="7" width="19" height="11" rx="5.5"/><path d="M7.5 10.5v4M5.5 12.5h4"/><circle cx="15.5" cy="11.5" r=".8"/><circle cx="17.5" cy="13.8" r=".8"/></svg><span id="ctlTxt">Take control</span></button>
 
 <div class="top">
   <div class="panel status">
@@ -360,7 +364,7 @@ const starterRoad=road.slice();
 const S={
   db:null, user:null, room:null, uid:null, solo:true, canWrite:true,
   me:null, players:{}, buildings:[], dbRoads:{}, online:{},
-  pos:{x:0,y:0}, target:null, keys:{}, playing:false, task:null, follow:true,
+  pos:{x:0,y:0}, target:null, keys:{}, playing:false, task:null, follow:false, control:false,
   build:false, mode:"walk", cat:"Homes", place:null, ghost:null, roadTiles:new Set(),
   sheet:null, saveChain:Promise.resolve(), dataNote:"",
 };
@@ -408,7 +412,7 @@ function bonusFor(b){
 /* ============================================================
    AUTONOMOUS LIFE (same result on every screen)
    ============================================================ */
-const SLOT=45000, WALK=70;
+const SLOT=60000, WALK=16;   // townsfolk stroll at about 1 tile a second
 const NPC_NAMES=["Ari","Bo","Cleo","Dev","Esi","Fen","Gus","Hana","Ivo","Juno","Kiri","Lio","Mae","Nell","Oki","Pia","Quin","Rumi","Sol","Tavi","Uma","Vic","Wren","Yara","Zed"];
 const NPC_COLORS=["#8a3b2e","#6b7a3a","#3f5a7a","#a8763a","#5a4a6a","#7a5a3a","#9a4a4a","#4f6b5a","#b08a4a"];
 const HAIR=["#3a2a1e","#5a3a22","#1e1a18","#8a6a3a","#6b4a2e"], LEGS=["#4a3a2e","#3a3f4a","#5a4a3a","#2f2a28"];
@@ -459,7 +463,7 @@ function spawnCar(){
     const i=roadList[Math.random()*roadList.length|0]; if (i==null) return;
     const x=i%W, y=(i/W)|0, o=roadExits(x,y); if (!o.length||traffic.some(c=>c.x===x&&c.y===y)) continue;
     const din=o[Math.random()*o.length|0];
-    traffic.push({id:carSeq++,x,y,din,dout:pickOut(x,y,din),p:.05,v:0,vmax:1.5+Math.random()*.9,col:CAR_COL[Math.random()*CAR_COL.length|0],bus:Math.random()<.07,state:"drive",wait:0,conf:-1});
+    traffic.push({id:carSeq++,x,y,din,dout:pickOut(x,y,din),p:.05,v:0,vmax:2+Math.random()*.8,col:CAR_COL[Math.random()*CAR_COL.length|0],bus:Math.random()<.07,state:"drive",wait:0,conf:-1});
     return;
   }
 }
@@ -509,7 +513,7 @@ function crash(c,o,x,y,now){
   const a={id:accSeq++,x,y,cars:[c,o],state:"waiting",t0:now,near:nearestName(x,y)};
   const st=nearestOf("police",x,y); let path=null;
   if (st){ const s=roadNear(st); if (s>=0) path=bfs(s,y*W+x); }
-  if (path){ a.unit=mkUnit("police",path,now+2500,5,6000); a.clearAt=a.unit.workEnd; toast("Crash near the "+a.near+"! Police are on the way."); }
+  if (path){ a.unit=mkUnit("police",path,now+2500,4,6000); a.clearAt=a.unit.workEnd; toast("Crash near the "+a.near+"! Police are on the way."); }
   else { a.clearAt=now+90000; toast("Crash near the "+a.near+". Build a Police Station to clear crashes faster."); }
   accidents.push(a);
 }
@@ -557,7 +561,7 @@ function fireEvent(k){
       ev={k,b,t0,near:TYPES[b.type].name};
       const st=nearestOf("fire",b.x,b.y); let path=null;
       if (st){ const s=roadNear(st), z=roadNear(b); if (s>=0&&z>=0) path=bfs(s,z); }
-      if (path){ ev.unit=mkUnit("fire",path,t0+4000,4.5,9000); ev.tOut=ev.unit.workEnd; } else ev.tOut=t0+60000;
+      if (path){ ev.unit=mkUnit("fire",path,t0+4000,3.6,9000); ev.tOut=ev.unit.workEnd; } else ev.tOut=t0+60000;
     }
   }
   fireCache.set(k,ev); return ev;
@@ -949,7 +953,7 @@ function drawPeople(list,t){
     let f=facing.get(p.key); if (!f){ f={x:p.x,z:p.z,a:0}; facing.set(p.key,f); }
     const dx=p.x-f.x, dz=p.z-f.z; if (dx*dx+dz*dz>1e-6) f.a=Math.atan2(dx,dz); f.x=p.x; f.z=p.z;
     MB.makeRotationY(f.a); MB.setPosition(p.x,0,p.z);
-    const sw=p.walking?Math.sin(t*11+(p.ph||0))*.6:0;
+    const sw=p.walking?Math.sin(t*7+(p.ph||0))*.5:0;
     part(PP.leg,n*2,MB,-.04,.2,0,sw,0,-.1,0,.055,.2,.06,p.legs);
     part(PP.leg,n*2+1,MB,.04,.2,0,-sw,0,-.1,0,.055,.2,.06,p.legs);
     part(PP.body,n,MB,0,.3,0,0,0,0,0,.16,.2,.1,p.color);
@@ -1225,7 +1229,7 @@ function buildingNear(wx,wy){
     if (tx>=b.x-1&&tx<=b.x+w+1&&ty>=b.y-1&&ty<=b.y+h+1){ const d=Math.hypot(tx-(b.x+w/2),ty-(b.y+h/2)); if (d<bd){ bd=d; best=b; } } }
   return best;
 }
-function startTask(b){ userInput(); if (S.task) return; if (burningMap(Date.now()).has(b.id)){ toast("The "+TYPES[b.type].name+" is on fire. Wait for the fire brigade."); return; } const t=TYPES[b.type], bon=bonusFor(b); S.task={b,start:performance.now(),secs:t.secs,reward:Math.round(t.reward*(1+bon.pct/100))}; S.target=null; showBuilding(b.id); }
+function startTask(b){ if (!S.control) setControl(true); userInput(); if (S.task) return; if (burningMap(Date.now()).has(b.id)){ toast("The "+TYPES[b.type].name+" is on fire. Wait for the fire brigade."); return; } const t=TYPES[b.type], bon=bonusFor(b); S.task={b,start:performance.now(),secs:t.secs,reward:Math.round(t.reward*(1+bon.pct/100))}; S.target=null; showBuilding(b.id); }
 function finishTask(){ const tk=S.task; S.task=null; S.me.credits+=tk.reward; S.me.earned=(S.me.earned||0)+tk.reward; S.me.tasks=(S.me.tasks||0)+1; markDirty(true); toast(TYPES[tk.b.type].act+" done","+"+tk.reward); if (S.sheet&&S.sheet.kind==="building") showBuilding(tk.b.id); }
 
 /* ============================================================
@@ -1266,7 +1270,7 @@ function showBuilding(id){
     if (fe&&S.playing){ body.append(el("button",{class:"dark",disabled:true},"Closed until the fire is out")); }
     else if (S.task&&S.task.b===b){ body.append(el("div",{style:"display:grid;gap:6px"}, el("div",{class:"note",id:"taskLbl"},t.verb+"…"), el("div",{class:"bar"},el("i",{id:"taskBar"})))); }
     else if (S.playing){
-      body.append(el("div",{class:"btnrow"}, near ? el("button",{class:"dark",onclick:()=>startTask(b)}, t.act+" · +"+reward) : el("button",{class:"dark",onclick:()=>{ userInput(); S.target=door(b); S.follow=true; toast("Walking to the "+t.name); }}, "Walk here")));
+      body.append(el("div",{class:"btnrow"}, near ? el("button",{class:"dark",onclick:()=>startTask(b)}, t.act+" · +"+reward) : el("button",{class:"dark",onclick:()=>{ setControl(true); S.target=door(b); S.follow=true; toast("Walking to the "+t.name); }}, "Walk here")));
     }
     if (!b.starter && b.by===(S.uid||"solo") && S.playing) body.append(el("button",{class:"soft",onclick:()=>demolish(b)},"Demolish · +"+fmt(Math.floor(t.price/2))+" back"));
   });
@@ -1370,7 +1374,7 @@ function toggleBuild(on){
   updateChrome();
 }
 $("buildBtn").onclick=()=>toggleBuild(!S.build);
-$("homeBtn").onclick=()=>{ followId=null; S.follow=true; if (!S.playing){ cam.tx=TOWN.x+.5; cam.tz=TOWN.y+.5; } };
+$("homeBtn").onclick=()=>{ followId=null; if (S.playing){ cam.tx=S.pos.x/T; cam.tz=S.pos.y/T; S.follow=S.control; } else { cam.tx=TOWN.x+.5; cam.tz=TOWN.y+.5; } };
 $("peopleBtn").onclick=showPeople; $("statsBtn").onclick=showStats; $("mapBtn").onclick=showMap;
 
 
@@ -1384,10 +1388,10 @@ addEventListener("keydown",e=>{
   const k=e.key.toLowerCase(); S.keys[k]=true;
   if (["arrowup","arrowdown","arrowleft","arrowright"," "].includes(k)) e.preventDefault();
   if (k==="escape"){ if (S.build) toggleBuild(false); else closeSheet(); }
-  if (k==="e"&&S.playing&&!S.task){ const b=buildingNear(S.pos.x,S.pos.y); if (b) startTask(b); }
+  if (k==="c"&&S.playing) setControl(!S.control);
+  if (k==="e"&&S.playing&&S.control&&!S.task){ const b=buildingNear(S.pos.x,S.pos.y); if (b) startTask(b); }
   if (k==="b"&&S.playing) toggleBuild(!S.build);
-  if (anyKey()||k==="e") userInput();
-  if (anyKey()){ S.target=null; S.follow=true; followId=null; }
+  if (S.control&&anyKey()){ userInput(); S.target=null; S.follow=true; followId=null; }
 });
 addEventListener("keyup",e=>{ S.keys[e.key.toLowerCase()]=false; });
 cvs.addEventListener("contextmenu",e=>e.preventDefault());
@@ -1422,48 +1426,56 @@ cvs.addEventListener("pointerup",endPointer); cvs.addEventListener("pointercance
 function paintAt(sx,sy){ const g=groundAt(sx,sy); if (!g) return; const x=Math.floor(g.x), y=Math.floor(g.z); if (!inMap(x,y)) return; const i=y*W+x; if (water[i]||occ[i]>=0||road[i]||S.roadTiles.has(i)) return; if ((S.roadTiles.size+1)*ROAD_PRICE>S.me.credits) return; S.roadTiles.add(i); }
 function clickAt(sx,sy,ptype){
   if (S.build&&S.mode==="pave") return;
-  if (!S.build) userInput();
   const g=groundAt(sx,sy);
   if (S.build&&S.place){ if (!g) return; const gh=ghostFrom(g); if (ptype==="mouse"||(S.ghost&&S.ghost.x===gh.x&&S.ghost.y===gh.y)){ S.ghost=gh; placeBuilding(S.place,gh.x,gh.y); } else { S.ghost=gh; updateChrome(); } return; }
   for (const p of hitPeople) if (Math.hypot(p.x-sx,p.y-sy)<22){ showPerson(p.id); return; }
   const b=buildingAt(sx,sy);
   if (S.build&&S.mode==="bulldoze"){ if (b&&!b.starter&&b.by===(S.uid||"solo")) demolish(b); else toast(b?"You can only remove buildings you built":"Tap one of your buildings"); return; }
-  if (b){ showBuilding(b.id); if (S.playing&&buildingNear(S.pos.x,S.pos.y)!==b){ S.target=door(b); S.follow=true; followId=null; } return; }
-  if (!S.playing||!g) return;
-  S.target={x:g.x*T,y:g.z*T}; S.follow=true; followId=null; if (S.task) S.task=null; if (S.sheet) closeSheet();
+  if (b){ showBuilding(b.id); if (S.playing&&S.control&&buildingNear(S.pos.x,S.pos.y)!==b){ S.target=door(b); S.follow=true; followId=null; } return; }
+  if (!S.playing||!g||!S.control) return;
+  userInput(); S.target={x:g.x*T,y:g.z*T}; S.follow=true; followId=null; if (S.task) S.task=null; if (S.sheet) closeSheet();
 }
 
 /* ============================================================
    LOOP
    ============================================================ */
 let last=performance.now(), creditAcc=0, presAcc=0, uiAcc=0, lastPres="", lastNear=null;
-/* idle roaming: after a few seconds without input, your character carries on with its day by itself.
-   Any key, click or tap takes control back straight away. Roaming earns only the per-second coins;
-   activity rewards are paid only for activities you start yourself. */
-const IDLE_MS=8000, ROAM_HINT="Roaming on their own. Move, click or tap to take over.";
+/* Your character lives on their own like the townsfolk, and the camera stays free.
+   "Take control" (or C) lets you steer them; the camera then follows them. Roaming earns the
+   per-second coins; activity rewards are paid only for activities you start yourself. */
 let lastInput=performance.now(), auto=null;
-function userInput(){ lastInput=performance.now(); if (auto){ auto=null; S.target=null; if ($("hint").textContent===ROAM_HINT&&!S.build) setHint(""); } }
+function userInput(){ lastInput=performance.now(); if (auto){ auto=null; S.target=null; } }
+function setControl(on){
+  S.control=on; auto=null; S.target=null; followId=null; S.follow=on;
+  const b=$("ctlBtn"); b.setAttribute("aria-pressed",String(on)); $("ctlTxt").textContent=on?"Let them roam":"Take control";
+  toast(on?"You're steering "+S.me.name+". Press C or the button to let them roam.":S.me.name+" is living on their own again.");
+}
+$("ctlBtn").onclick=()=>setControl(!S.control);
 function myAct(){ if (S.task) return TYPES[S.task.b.type].verb+" at "+TYPES[S.task.b.type].name; if (auto&&auto.phase==="do") return TYPES[auto.b.type].verb+" at "+TYPES[auto.b.type].name; return null; }
 function roam(){
-  if (S.task||anyKey()||performance.now()-lastInput<IDLE_MS) return;
-  if (!auto){ const c=candidatesFor((S.uid||"solo")+"-roam",homeOf(S.uid,S.me)); if (!c.length) return; const b=c[Math.random()*c.length|0]; auto={b,phase:"walk"}; S.target=door(b); S.follow=true; if (!S.build&&!S.sheet) setHint(ROAM_HINT); }
-  else if (auto.phase==="walk"&&!S.target){ auto.phase="do"; auto.until=performance.now()+8000+Math.random()*8000; }
+  if (S.control||S.task) return;
+  if (!auto){ const c=candidatesFor((S.uid||"solo")+"-roam",homeOf(S.uid,S.me)); if (!c.length) return; const b=c[Math.random()*c.length|0]; auto={b,phase:"walk"}; S.target=door(b); }
+  else if (auto.phase==="walk"&&!S.target){ auto.phase="do"; auto.until=performance.now()+12000+Math.random()*14000; }
   else if (auto.phase==="do"&&performance.now()>auto.until) auto=null;
 }
 function blocked(wx,wy){ const x=Math.floor(wx/T), y=Math.floor(wy/T); if (!inMap(x,y)) return true; return water[y*W+x]===1; }
 function tick(nowP){
   const dt=Math.min(.1,(nowP-last)/1000); last=nowP; const now=Date.now(), k=S.keys;
   if (k.q) cam.az+=dt*1.6; if (k.r) cam.az-=dt*1.6;
+  if (!S.control&&document.activeElement.tagName!=="INPUT"){ // free camera: WASD / arrows pan the view
+    const fx=-Math.sin(cam.az), fz=-Math.cos(cam.az), sp=cam.dist*.9*dt; let px=0,pz=0;
+    if (k.w||k.arrowup){ px+=fx; pz+=fz; } if (k.s||k.arrowdown){ px-=fx; pz-=fz; } if (k.d||k.arrowright){ px-=fz; pz+=fx; } if (k.a||k.arrowleft){ px+=fz; pz-=fx; }
+    if (px||pz){ cam.tx+=px*sp; cam.tz+=pz*sp; followId=null; } }
   if (S.playing){
     // screen-relative movement: forward is away from the camera
     const fx=-Math.sin(cam.az), fz=-Math.cos(cam.az), rx=-fz, rz=fx; let vx=0,vy=0;
-    if (k.w||k.arrowup){ vx+=fx; vy+=fz; } if (k.s||k.arrowdown){ vx-=fx; vy-=fz; } if (k.d||k.arrowright){ vx+=rx; vy+=rz; } if (k.a||k.arrowleft){ vx-=rx; vy-=rz; }
-    const speed=k.shift?170:95;
+    if (S.control){ if (k.w||k.arrowup){ vx+=fx; vy+=fz; } if (k.s||k.arrowdown){ vx-=fx; vy-=fz; } if (k.d||k.arrowright){ vx+=rx; vy+=rz; } if (k.a||k.arrowleft){ vx-=rx; vy-=rz; } }
+    const speed=k.shift?36:18;
     if ((vx||vy)&&S.task) S.task=null;
     if (!vx&&!vy&&S.target){ const dx=S.target.x-S.pos.x, dy=S.target.y-S.pos.y, d=Math.hypot(dx,dy); if (d<2) S.target=null; else { vx=dx/d; vy=dy/d; } }
     else if (vx||vy){ const m=Math.hypot(vx,vy); vx/=m; vy/=m; }
     if (vx||vy){ const nx=S.pos.x+vx*speed*dt, ny=S.pos.y+vy*speed*dt, okX=!blocked(nx,S.pos.y), okY=!blocked(S.pos.x,ny); if (okX) S.pos.x=nx; if (okY) S.pos.y=ny; if (!okX&&!okY) S.target=null; }
-    if (S.follow&&!followId){ cam.tx+=(S.pos.x/T-cam.tx)*Math.min(1,dt*5); cam.tz+=(S.pos.y/T-cam.tz)*Math.min(1,dt*5); }
+    if (S.control&&S.follow&&!followId){ cam.tx+=(S.pos.x/T-cam.tx)*Math.min(1,dt*5); cam.tz+=(S.pos.y/T-cam.tz)*Math.min(1,dt*5); }
     if (S.task&&performance.now()-S.task.start>=S.task.secs*1000) finishTask();
     roam();
     if (document.visibilityState==="visible"){ creditAcc+=dt; if (creditAcc>=1){ const n=Math.floor(creditAcc); creditAcc-=n; S.me.credits+=n; S.me.earned=(S.me.earned||0)+n; dirty=true; } }
@@ -1471,7 +1483,7 @@ function tick(nowP){
     presAcc+=dt;
     if (S.room&&presAcc>.1){ presAcc=0; const act=myAct(), walking=!!(S.target||anyKey()); const sig=Math.round(S.pos.x)+","+Math.round(S.pos.y)+","+act+","+walking; if (sig!==lastPres){ lastPres=sig; S.room.presence({pid:S.uid,x:Math.round(S.pos.x),y:Math.round(S.pos.y),act,walking}).catch(()=>{}); } }
     const nb=S.task?S.task.b:buildingNear(S.pos.x,S.pos.y);
-    if (nb!==lastNear){ lastNear=nb; if (nb&&!auto&&!S.build&&(!S.sheet||S.sheet.kind==="building")) showBuilding(nb.id); else if (!nb&&S.sheet&&S.sheet.kind==="building"&&!S.target) closeSheet(); }
+    if (nb!==lastNear){ lastNear=nb; if (nb&&S.control&&!S.build&&(!S.sheet||S.sheet.kind==="building")) showBuilding(nb.id); else if (!nb&&S.sheet&&S.sheet.kind==="building"&&!S.target) closeSheet(); }
     if (S.task){ const bar=$("taskBar"); if (bar){ const p=Math.min(1,(performance.now()-S.task.start)/(S.task.secs*1000)); bar.style.width=(p*100).toFixed(1)+"%"; const l=$("taskLbl"); if (l) l.textContent=TYPES[S.task.b.type].verb+"… "+Math.ceil(S.task.secs*(1-p))+"s"; } }
   }
   if (followId){ const p=everyone(now).find(q=>q.id===followId); if (p){ cam.tx+=(p.x/T-cam.tx)*Math.min(1,dt*5); cam.tz+=(p.y/T-cam.tz)*Math.min(1,dt*5); } }
@@ -1520,9 +1532,9 @@ function renderLogin(state){
 function enterGame(){
   $("login").hidden=true; S.playing=true;
   const st=autoState(S.uid||"solo",homeOf(S.uid,S.me),Date.now()); S.pos={x:st.x,y:st.y};
-  cam.tx=S.pos.x/T; cam.tz=S.pos.y/T; cam.dist=Math.min(cam.dist,22); S.follow=true;
-  $("buildBtn").hidden=false; $("rate").hidden=false;
-  setHint(matchMedia("(pointer:coarse)").matches?"Tap to walk, tap a building to visit it. Pinch to zoom, twist with two fingers to turn, drag to look around.":"WASD or click to walk · Shift runs · E does the activity · Q / R or right-drag turns the view · B opens Build");
+  cam.tx=S.pos.x/T; cam.tz=S.pos.y/T; cam.dist=Math.min(cam.dist,22); S.follow=false; S.control=false;
+  $("buildBtn").hidden=false; $("rate").hidden=false; $("ctlBtn").hidden=false;
+  setHint(matchMedia("(pointer:coarse)").matches?"{n} lives on their own. Tap Take control to steer them. Drag to look around, pinch to zoom, twist to turn.".replace("{n}",S.me.name):"{n} lives on their own · Take control (or C) to steer · WASD pans · Q / R or right-drag turns · B opens Build".replace("{n}",S.me.name));
   setTimeout(()=>{ if (!S.build) setHint(""); },9000);
   toast("Welcome to town, "+S.me.name);
 }
