@@ -96,6 +96,13 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--gold);outline-o
 .card[disabled]{opacity:.45;cursor:not-allowed;}
 .card .lock{font-size:11px;font-weight:800;color:var(--coral);}
 .right{display:grid;gap:8px;min-width:0;}
+.placebar{padding:12px 14px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.placebar .info{flex:1;min-width:170px;display:grid;gap:2px;}
+.placebar .info b{font-family:var(--display);font-weight:600;font-size:19px;}
+.placebar .why{font-size:13px;font-weight:700;color:var(--muted);}
+.placebar .why.ok{color:var(--green);}
+.placebar .why.bad{color:var(--coral);}
+.placebar .dark,.placebar .soft{padding:10px 16px;font-size:16px;}
 
 /* toasts */
 #toast{position:fixed;z-index:9;top:calc(126px + env(safe-area-inset-top,0px));left:50%;transform:translateX(-50%);display:grid;gap:6px;pointer-events:none;justify-items:center;}
@@ -154,6 +161,7 @@ input[type=text]:focus{border-color:var(--gold);outline:none;}
 <div class="bottom">
   <div class="hint" id="hint" hidden></div>
   <div class="panel" id="sheet" hidden></div>
+  <div class="panel placebar" id="placebar" hidden></div>
   <div class="panel drawer" id="drawer" hidden>
     <div class="modes" id="modes"></div>
     <div class="right"><div class="cats" id="cats"></div><div class="cards" id="cards"></div></div>
@@ -365,7 +373,7 @@ const S={
   db:null, user:null, room:null, uid:null, solo:true, canWrite:true,
   me:null, players:{}, buildings:[], dbRoads:{}, online:{},
   pos:{x:0,y:0}, target:null, keys:{}, playing:false, task:null, follow:false, control:false,
-  build:false, mode:"walk", cat:"Homes", place:null, ghost:null, roadTiles:new Set(),
+  build:false, mode:"walk", cat:"Homes", place:null, ghost:null, rot:0, ghostLocked:false, roadTiles:new Set(),
   sheet:null, saveChain:Promise.resolve(), dataNote:"",
 };
 const cam={tx:TOWN.x+.5, tz:TOWN.y+.5, dist:34, az:Math.PI/4, pitch:.92};
@@ -373,13 +381,21 @@ const occ=new Int32Array(W*H).fill(-1), nearB=new Uint8Array(W*H);
 let destCache=new Map(), npcs=[], lamps=[], roadList=[];
 let floraDirty=true, roadDirty=true, buildingsDirty=true;
 const inMap=(x,y)=>x>=0&&y>=0&&x<W&&y<H;
+/* rotation (0-3 quarter turns) and construction helpers */
+const ROT_OFF=(w,h,r)=>[[0,0],[h,0],[w,h],[0,w]][r&3];
+function fp(b){ const s=TYPES[b.type].size, r=(b.rot|0)&3; return r%2?[s[1],s[0]]:[s[0],s[1]]; }
+function buildMs(type){ const [w,h]=TYPES[type].size; return Math.round(Math.max(1,Math.min(15,1+(w*h-4)*14/21))*60000); }   // 2×2 → 1 min … 5×5 → 15 min
+function underConstruction(b,now){ return !!(b&&b.done&&(now||Date.now())<b.done); }
+function localToTile(b,lx,lz){ const [w,h]=TYPES[b.type].size, r=(b.rot|0)&3, o=ROT_OFF(w,h,r); let x=lx,z=lz;
+  if (r===1){ x=-lz; z=lx; } else if (r===2){ x=-lx; z=-lz; } else if (r===3){ x=lz; z=-lx; } return [b.x+o[0]+x, b.y+o[1]+z]; }
+function fmtLeft(ms){ const s=Math.max(0,Math.ceil(ms/1000)), m=Math.floor(s/60); return m?m+"m "+String(s%60).padStart(2,"0")+"s":s+"s"; }
 
 function rebuildCity(){
   occ.fill(-1); nearB.fill(0);
-  S.buildings.forEach((b,idx)=>{ const [w,h]=TYPES[b.type].size;
+  S.buildings.forEach((b,idx)=>{ const [w,h]=fp(b);
     for (let y=b.y-1;y<=b.y+h;y++) for (let x=b.x-1;x<=b.x+w;x++) if (inMap(x,y)){ nearB[y*W+x]=1; if (x>=b.x&&x<b.x+w&&y>=b.y&&y<b.y+h) occ[y*W+x]=idx; } });
   npcs=[];
-  for (const hb of S.buildings) for (let k=0;k<(TYPES[hb.type].residents||0) && npcs.length<160;k++){
+  for (const hb of S.buildings) if (!underConstruction(hb)) for (let k=0;k<(TYPES[hb.type].residents||0) && npcs.length<160;k++){
     const id="npc-"+hb.id+"-"+k, h=hashStr(id);
     npcs.push({id, home:hb, name:NPC_NAMES[h%NPC_NAMES.length], color:NPC_COLORS[hashStr(id+"c")%NPC_COLORS.length], hat:(h>>4)%3===0, hair:HAIR[(h>>7)%HAIR.length], legs:LEGS[(h>>9)%LEGS.length]});
   }
@@ -398,13 +414,13 @@ function rebuildRoads(){
 function setBuildings(list){
   const starters=STARTER.map(([id,type,dx,dy])=>({id,type,x:TOWN.x+dx,y:TOWN.y+dy,by:null,starter:true}));
   const seen=new Set(), valid=[];
-  for (const b of list){ if (!TYPES[b.type]||TYPES[b.type].starter) continue; if (!Number.isInteger(b.x)||!Number.isInteger(b.y)||!inMap(b.x,b.y)) continue; if (seen.has(b.id)) continue; seen.add(b.id); valid.push(b); }
+  for (const b of list){ if (!TYPES[b.type]||TYPES[b.type].starter) continue; if (!Number.isInteger(b.x)||!Number.isInteger(b.y)||!inMap(b.x,b.y)) continue; if (seen.has(b.id)) continue; seen.add(b.id); b.rot=(b.rot|0)&3; if (typeof b.done!=="number") b.done=0; valid.push(b); }
   valid.sort((a,b)=>(a.at||0)-(b.at||0)||(a.id<b.id?-1:1));
   S.buildings=starters.concat(valid); rebuildCity(); rebuildRoads();
 }
 function bonusFor(b){
-  const t=TYPES[b.type],[w,h]=t.size,cx=b.x+w/2,cy=b.y+h/2; let leisure=0, roadOk=false;
-  for (const o of S.buildings){ if (o===b||!TYPES[o.type].leisure) continue; const ot=TYPES[o.type]; if (Math.hypot(o.x+ot.size[0]/2-cx,o.y+ot.size[1]/2-cy)<=10) leisure++; }
+  const t=TYPES[b.type],[w,h]=fp(b),cx=b.x+w/2,cy=b.y+h/2; let leisure=0, roadOk=false;
+  for (const o of S.buildings){ if (o===b||!TYPES[o.type].leisure) continue; const of=fp(o); if (!underConstruction(o)&&Math.hypot(o.x+of[0]/2-cx,o.y+of[1]/2-cy)<=10) leisure++; }
   for (let x=b.x-1;x<=b.x+w&&!roadOk;x++) for (let y=b.y-1;y<=b.y+h;y++){ if (inMap(x,y)&&road[y*W+x]&&(x<b.x||x>=b.x+w||y<b.y||y>=b.y+h)){ roadOk=true; break; } }
   return {pct:Math.min(30,leisure*5)+(roadOk?10:0), leisure, roadOk};
 }
@@ -419,10 +435,10 @@ const HAIR=["#3a2a1e","#5a3a22","#1e1a18","#8a6a3a","#6b4a2e"], LEGS=["#4a3a2e",
 const homeOf=(id,rec)=>rec&&rec.home?rec.home:{x:TOWN.x,y:TOWN.y};
 function candidatesFor(id,home){
   let c=destCache.get(id); if (c) return c;
-  c=S.buildings.map(b=>{ const t=TYPES[b.type]; return {b,d:Math.hypot(b.x+t.size[0]/2-home.x,b.y+t.size[1]/2-home.y)+hash2(hashStr(id)&65535,hashStr(b.id)&65535,3)*14}; }).sort((a,b)=>a.d-b.d).slice(0,12).map(s=>s.b);
+  c=S.buildings.filter(b=>!underConstruction(b)).map(b=>{ const s=fp(b); return {b,d:Math.hypot(b.x+s[0]/2-home.x,b.y+s[1]/2-home.y)+hash2(hashStr(id)&65535,hashStr(b.id)&65535,3)*14}; }).sort((a,b)=>a.d-b.d).slice(0,12).map(s=>s.b);
   destCache.set(id,c); return c;
 }
-function door(b){ const t=TYPES[b.type]; return {x:(b.x+t.size[0]/2)*T, y:(b.y+t.size[1])*T+6}; }
+function door(b){ const [w,h]=TYPES[b.type].size, [x,z]=localToTile(b,w/2,h+.4); return {x:x*T, y:z*T}; }
 function destAt(id,home,k){ const c=candidatesFor(id,home); return c.length ? c[Math.floor(hash2(hashStr(id)&0xffffff,k,11)*c.length)] : null; }
 function autoState(id,home,now){
   const k=Math.floor(now/SLOT), a=destAt(id,home,k-1), b=destAt(id,home,k);
@@ -517,10 +533,10 @@ function crash(c,o,x,y,now){
   else { a.clearAt=now+90000; toast("Crash near the "+a.near+". Build a Police Station to clear crashes faster."); }
   accidents.push(a);
 }
-function nearestOf(type,x,y){ let best=null,bd=1e9; for (const b of S.buildings){ if (b.type!==type) continue; const t=TYPES[b.type], d=Math.hypot(b.x+t.size[0]/2-x,b.y+t.size[1]/2-y); if (d<bd){ bd=d; best=b; } } return best; }
-function nearestName(x,y){ let best="road",bd=1e9; for (const b of S.buildings){ const t=TYPES[b.type], d=Math.hypot(b.x+t.size[0]/2-x,b.y+t.size[1]/2-y); if (d<bd){ bd=d; best=t.name; } } return best; }
+function nearestOf(type,x,y){ let best=null,bd=1e9; for (const b of S.buildings){ if (b.type!==type||underConstruction(b)) continue; const t=TYPES[b.type], s=fp(b), d=Math.hypot(b.x+s[0]/2-x,b.y+s[1]/2-y); if (d<bd){ bd=d; best=b; } } return best; }
+function nearestName(x,y){ let best="road",bd=1e9; for (const b of S.buildings){ const t=TYPES[b.type], s=fp(b), d=Math.hypot(b.x+s[0]/2-x,b.y+s[1]/2-y); if (d<bd){ bd=d; best=t.name; } } return best; }
 function roadNear(b){
-  const [w,h]=TYPES[b.type].size, dx=b.x+w/2, dy=b.y+h; let best=-1, bd=1e9;
+  const [w,h]=fp(b), dr=door(b), dx=dr.x/T, dy=dr.y/T; let best=-1, bd=1e9;
   for (let y=b.y-6;y<b.y+h+6;y++) for (let x=b.x-6;x<b.x+w+6;x++){ if (!isRoad(x,y)) continue;
     const ring=Math.max(b.x-x, x-(b.x+w-1), b.y-y, y-(b.y+h-1), 0), d=ring*100+Math.hypot(x+.5-dx,y+.5-dy);
     if (d<bd){ bd=d; best=y*W+x; } }
@@ -555,7 +571,7 @@ function fireEvent(k){
   if (fireCache.has(k)) return fireCache.get(k);
   let ev=null;
   if (hash2(k,1,SEED+77)<.6){
-    const cand=S.buildings.filter(b=>!NOBURN.has(TYPES[b.type].style)&&b.type!=="fire");
+    const cand=S.buildings.filter(b=>!NOBURN.has(TYPES[b.type].style)&&b.type!=="fire"&&!underConstruction(b,k*FIRE_SLOT+60000));
     if (cand.length){
       const b=cand[Math.floor(hash2(k,3,SEED+77)*cand.length)], t0=k*FIRE_SLOT+Math.floor(hash2(k,2,SEED+77)*60000);
       ev={k,b,t0,near:TYPES[b.type].name};
@@ -717,7 +733,7 @@ function buildGlowPoints(){
   if (glowPts){ scene.remove(glowPts); glowPts.geometry.dispose(); }
   const P=[],C=[],c=new THREE.Color();
   for (const L of lamps){ const [tx,ty]=lampPos(L); P.push(tx,.92,ty); c.set("#ffbf70"); C.push(c.r,c.g,c.b); }
-  for (const b of S.buildings){ const t=TYPES[b.type]; if (!t.H) continue; P.push(b.x+t.size[0]/2,.35,b.y+t.size[1]+.05); c.set(t.glow); C.push(c.r,c.g,c.b); }
+  for (const b of S.buildings){ const t=TYPES[b.type]; if (!t.H||underConstruction(b)) continue; const dr=door(b); P.push(dr.x/T,.35,dr.y/T); c.set(t.glow); C.push(c.r,c.g,c.b); }
   const g=new THREE.BufferGeometry(); g.setAttribute("position",new THREE.Float32BufferAttribute(P,3)); g.setAttribute("color",new THREE.Float32BufferAttribute(C,3));
   glowPts=new THREE.Points(g,new THREE.PointsMaterial({size:2.4,map:glowTex,vertexColors:true,transparent:true,depthWrite:false,blending:THREE.AdditiveBlending,opacity:0,sizeAttenuation:true,fog:false}));
   glowPts.frustumCulled=false; scene.add(glowPts);
@@ -917,22 +933,39 @@ function makeSign(t,key,ww,text){
 /* ---------- building objects in the scene ---------- */
 const bObjs=new Map(), pickables=[];
 function makeBuildingObj(b,ghost){
-  const tg=typeGeo(b.type), grp=new THREE.Group();
-  const main=new THREE.Mesh(tg.geo,ghost?MAT.ghost:MAT.b); main.castShadow=!ghost; main.receiveShadow=true; main.userData.bid=b.id; grp.add(main);
-  if (tg.win) grp.add(new THREE.Mesh(tg.win,ghost?MAT.ghostPlain:MAT.win));
-  if (tg.glass) grp.add(new THREE.Mesh(tg.glass,MAT.glass));
-  if (tg.sign){ const s=new THREE.Mesh(tg.signGeo,tg.sign.mat); s.position.copy(tg.signPos); grp.add(s); }
+  const tg=typeGeo(b.type), grp=new THREE.Group(), body=new THREE.Group(); grp.add(body);
+  const main=new THREE.Mesh(tg.geo,ghost?MAT.ghost:MAT.b); main.castShadow=!ghost; main.receiveShadow=true; main.userData.bid=b.id; body.add(main);
+  if (tg.win) body.add(new THREE.Mesh(tg.win,ghost?MAT.ghostPlain:MAT.win));
+  if (tg.glass) body.add(new THREE.Mesh(tg.glass,MAT.glass));
+  let sign=null; if (tg.sign){ sign=new THREE.Mesh(tg.signGeo,tg.sign.mat); sign.position.copy(tg.signPos); body.add(sign); }
   grp.userData.spin=[];
-  for (const sp of tg.spin){ const m=new THREE.Mesh(sp.geo,ghost?MAT.ghost:MAT.b); m.position.set(sp.pos[0],sp.pos[1],sp.pos[2]); m.castShadow=!ghost; grp.add(m); grp.userData.spin.push({m,speed:sp.speed}); }
-  grp.position.set(b.x,0,b.y);
-  return {grp,main,b};
+  for (const sp of tg.spin){ const m=new THREE.Mesh(sp.geo,ghost?MAT.ghost:MAT.b); m.position.set(sp.pos[0],sp.pos[1],sp.pos[2]); m.castShadow=!ghost; body.add(m); grp.userData.spin.push({m,speed:sp.speed}); }
+  placeGroup(grp,b);
+  return {grp,body,main,sign,b};
+}
+function placeGroup(grp,b){ const [w,h]=TYPES[b.type].size, r=(b.rot|0)&3, o=ROT_OFF(w,h,r); grp.position.set(b.x+o[0],0,b.y+o[1]); grp.rotation.y=-r*Math.PI/2; }
+/* construction site: dirt pad, timber scaffolding, a crane on bigger plots; the building rises as work progresses */
+function makeSite(b){
+  const t=TYPES[b.type], [w,h]=t.size, tg=typeGeo(b.type), top=Math.max(1,tg.top*1.05), g=new GB(), wood="#a8834f";
+  g.box(.05,0,.05,w-.1,.03,h-.1,"#8a6a45");
+  const xs=[.1,w/2-.04,w-.18], zs=[.1,h/2-.04,h-.18];
+  for (const x of xs) for (const z of zs){ if (x!==xs[1]||z!==zs[1]) g.box(x,0,z,.07,top,.07,wood); }
+  for (let y=.5;y<top;y+=.55){ g.box(.1,y,.08,w-.2,.05,.06,wood); g.box(.1,y,h-.17,w-.2,.05,.06,wood); g.box(.08,y,.1,.06,.05,h-.2,wood); g.box(w-.17,y,.1,.06,.05,h-.2,wood); }
+  for (let k=0;k<3;k++) g.box(.3+k*.35,0,h+.1,.3,.12-k*.03,.25,["#b9a27a","#8a8a8a","#c9a26a"][k]);
+  const out={grp:new THREE.Group(), jib:null};
+  const m=new THREE.Mesh(g.finish().geo,MAT.b); m.castShadow=true; m.receiveShadow=true; out.grp.add(m);
+  if (w*h>=9){ const c=new GB(), ch=top+1.6; c.box(-.12,0,-.12,.24,ch,.24,"#d9a23a"); for (let y=.3;y<ch;y+=.35) c.box(-.13,y,-.13,.26,.03,.26,"#b8862a");
+    const crane=new THREE.Mesh(c.finish().geo,MAT.b); crane.castShadow=true; crane.position.set(w+.35,0,-.35); out.grp.add(crane);
+    const j=new GB(); j.box(-.8,0,-.08,3.2,.14,.16,"#d9a23a"); j.box(-.8,-.2,-.12,.5,.25,.24,"#7a7a7a"); j.box(-.1,.14,-.1,.2,.3,.2,"#d9a23a"); j.box(2.1,-1.2,-.01,.02,1.2,.02,"#3a3a3a"); j.box(2.02,-1.32,-.08,.18,.12,.16,"#5a5a5a");
+    out.jib=new THREE.Mesh(j.finish().geo,MAT.b); out.jib.castShadow=true; out.jib.position.set(w+.35,ch,-.35); out.grp.add(out.jib); }
+  return out;
 }
 function syncBuildings(){
   const ids=new Set(S.buildings.map(b=>b.id));
   for (const [id,o] of bObjs) if (!ids.has(id)){ scene.remove(o.grp); bObjs.delete(id); }
-  for (const b of S.buildings){ let o=bObjs.get(b.id); if (o&&o.b.type!==b.type){ scene.remove(o.grp); o=null; }
+  for (const b of S.buildings){ let o=bObjs.get(b.id); if (o&&(o.b.type!==b.type||((o.b.rot|0)!==(b.rot|0)))){ scene.remove(o.grp); o=null; }
     if (!o){ o=makeBuildingObj(b); scene.add(o.grp); bObjs.set(b.id,o); }
-    o.b=b; o.grp.position.set(b.x,0,b.y); }
+    o.b=b; placeGroup(o.grp,b); }
   pickables.length=0; for (const o of bObjs.values()) pickables.push(o.main);
   buildGlowPoints(); buildingsDirty=false;
 }
@@ -1007,9 +1040,9 @@ function updatePuffs(dt){
     p.s.material.opacity=(p.dark?.7:.5)*Math.min(1,p.life*1.4)*Math.min(1,age*6); }
 }
 function emitters(dt){
-  for (const o of bObjs.values()){ const tg=typeGeo(o.b.type); if (!tg.emit.length) continue; const bx=o.b.x, bz=o.b.y;
+  for (const o of bObjs.values()){ const tg=typeGeo(o.b.type); if (!tg.emit.length||underConstruction(o.b)) continue; const bx=o.b.x, bz=o.b.y;
     if (Math.abs(bx-cam.tx)>40||Math.abs(bz-cam.tz)>40) continue;
-    for (const e of tg.emit){ const fac=e[3]==="factory"; if (Math.random()<dt*(fac?1.6:.7)) puff(bx+e[0],e[1],bz+e[2],false,fac?.35:.2,.4,4); } }
+    for (const e of tg.emit){ const fac=e[3]==="factory"; if (Math.random()<dt*(fac?1.6:.7)) { const [ex,ez]=localToTile(o.b,e[0],e[2]); puff(ex,e[1],ez,false,fac?.35:.2,.4,4); } } }
 }
 
 /* ---------- fires, hoses, crash scenes ---------- */
@@ -1020,7 +1053,7 @@ function syncFires(burning,t,dt,night,now){
   for (const [id,e] of burning){
     let g=fireObjs.get(id); const tt=TYPES[e.b.type], tg=typeGeo(e.b.type);
     if (!g){ g=new THREE.Group(); for (let k=0;k<5;k++){ const m=new THREE.Mesh(GEO.cone,k%2?MAT.flameB:MAT.flameA); m.position.set((k-2)*.16*tt.size[0]/2,0,((k*7)%3-1)*.15); g.add(m); }
-      g.position.set(e.b.x+tt.size[0]/2,tg.top*.82,e.b.y+tt.size[1]/2); scene.add(g); fireObjs.set(id,g); }
+      { const f=fp(e.b); g.position.set(e.b.x+f[0]/2,tg.top*.82,e.b.y+f[1]/2); } scene.add(g); fireObjs.set(id,g); }
     const spraying=e.unit&&now>=e.unit.arrive;
     g.children.forEach((m,k)=>{ const s=(spraying?.16:.27)*(1+.35*Math.sin(t*9+k*1.7)); m.scale.set(s*.9,s*2.6,s*.9); });
     if (Math.random()<dt*7) puff(g.position.x+(Math.random()-.5)*.6,g.position.y+.5,g.position.z,true,.4,.7,4.5);
@@ -1032,7 +1065,7 @@ const sprayPts=[0,1,2].map(()=>{ const g=new THREE.BufferGeometry(); g.setAttrib
 function updateSpray(fires,now,t){
   let k=0;
   for (const e of fires){ if (!e.unit||now<e.unit.arrive||now>=e.unit.workEnd||k>=3) continue; const st=unitPos(e.unit,now); if (!st) continue;
-    const tt=TYPES[e.b.type], tg=typeGeo(e.b.type), ax=st.tx, az=st.ty, ay=.45, bx=e.b.x+tt.size[0]/2, bz=e.b.y+tt.size[1]/2, by=tg.top*.85, arr=sprayPts[k].geometry.attributes.position.array;
+    const tt=TYPES[e.b.type], tg=typeGeo(e.b.type), ax=st.tx, az=st.ty, ay=.45, bx=e.b.x+fp(e.b)[0]/2, bz=e.b.y+fp(e.b)[1]/2, by=tg.top*.85, arr=sprayPts[k].geometry.attributes.position.array;
     for (let i=0;i<40;i++){ const u=((i/40)+t*.9)%1; arr[i*3]=ax+(bx-ax)*u; arr[i*3+1]=ay+(by-ay)*u+Math.sin(u*Math.PI)*1.2; arr[i*3+2]=az+(bz-az)*u; }
     sprayPts[k].geometry.attributes.position.needsUpdate=true; sprayPts[k].visible=true; k++; }
   for (;k<3;k++) sprayPts[k].visible=false;
@@ -1058,9 +1091,9 @@ const paintMesh=inst(new THREE.PlaneGeometry(1,1).rotateX(-Math.PI/2),3000,false
 function updateGhost(){
   if (S.place&&S.ghost){
     if (ghostKey!==S.place){ if (ghostObj) scene.remove(ghostObj.grp); ghostObj=makeBuildingObj({id:"ghost",type:S.place,x:0,y:0},true); scene.add(ghostObj.grp); ghostKey=S.place; }
-    const t=TYPES[S.place]; ghostObj.grp.position.set(S.ghost.x,0,S.ghost.y); ghostObj.grp.visible=true;
-    footprint.visible=true; footprint.scale.set(t.size[0],1,t.size[1]); footprint.position.set(S.ghost.x+t.size[0]/2,.08,S.ghost.y+t.size[1]/2);
-    footprint.material.color.set(canPlace(S.place,S.ghost.x,S.ghost.y).ok?0x5d8b57:0xd4685a);
+    const gb={type:S.place,x:S.ghost.x,y:S.ghost.y,rot:S.rot}, f=fp(gb); placeGroup(ghostObj.grp,gb); ghostObj.grp.visible=true;
+    footprint.visible=true; footprint.scale.set(f[0],1,f[1]); footprint.position.set(S.ghost.x+f[0]/2,.08,S.ghost.y+f[1]/2);
+    footprint.material.color.set(canPlace(S.place,S.ghost.x,S.ghost.y,S.rot).ok?0x5d8b57:0xd4685a);
   } else { if (ghostObj) ghostObj.grp.visible=false; footprint.visible=false; }
   let n=0; if (S.build&&S.mode==="pave") for (const i of S.roadTiles){ if (n>=3000) break; setI(paintMesh,n++,i%W+.5,.09,((i/W)|0)+.5,1,1,1,0,null); }
   finishInst(paintMesh,n);
@@ -1117,7 +1150,19 @@ function renderWorld(now,dt){
   if (floraDirty) rebuildFlora(); if (roadDirty) buildRoadMesh(); if (buildingsDirty) syncBuildings();
   updateCamera(); const night=nightAmount(gameTime(now).frac); updateEnv(night);
   const t=performance.now()/1000;
-  for (const o of bObjs.values()) for (const sp of o.grp.userData.spin) sp.m.rotation.z+=dt*sp.speed;
+  for (const o of bObjs.values()){
+    const uc=underConstruction(o.b,now);
+    if (uc){ if (!o.site){ o.site=makeSite(o.b); o.grp.add(o.site.grp); }
+      const span=Math.max(1,o.b.done-(o.b.at||o.b.done-60000)), prog=Math.min(1,Math.max(0,(now-(o.b.done-span))/span));
+      o.body.scale.y=.04+.96*prog; if (o.sign) o.sign.visible=false;
+      if (o.site.jib) o.site.jib.rotation.y=Math.sin(t*.3+o.b.x)*1.2;
+      if (Math.random()<dt*1.2){ const [w,h]=fp(o.b); puff(o.b.x+Math.random()*w,.15,o.b.y+Math.random()*h,false,.2,.25,2.2); }
+    } else if (o.site){ o.grp.remove(o.site.grp); o.site=null; o.body.scale.y=1; if (o.sign) o.sign.visible=true;
+      if (o.b.at && Date.now()-o.b.done<120000) toast("The new "+TYPES[o.b.type].name+" is finished!");
+      rebuildCity(); }
+    else if (o.body.scale.y!==1){ o.body.scale.y=1; if (o.sign) o.sign.visible=true; }
+    if (!uc) for (const sp of o.grp.userData.spin) sp.m.rotation.z+=dt*sp.speed;
+  }
   emitters(dt);
   const fires=fireEvents(now), burning=burningMap(now);
   syncFires(burning,t,dt,night,now); updateSpray(fires,now,t); syncCrashes(t,dt);
@@ -1126,6 +1171,8 @@ function renderWorld(now,dt){
   if (zl()>.3) for (const n of npcs){ const st=autoState(n.id,{x:n.home.x+1,y:n.home.y+1},now); if (st.act&&st.act.startsWith("Asleep")) continue;
     const x=st.x/T, z=st.y/T; if (Math.abs(x-cam.tx)>50||Math.abs(z-cam.tz)>50) continue;
     list.push({key:n.id,x,z,color:n.color,walking:st.walking,hat:n.hat,hair:n.hair,legs:n.legs,ph:hashStr(n.id)%7}); }
+  for (const o of bObjs.values()){ if (!o.site) continue; const [w,h]=fp(o.b); if (Math.abs(o.b.x-cam.tx)>40||Math.abs(o.b.y-cam.tz)>40) continue;
+    for (let k=0;k<2;k++){ const [bw,bh]=TYPES[o.b.type].size, u=(Math.sin(t*.35+k*2+o.b.x)+1)/2, [x,z]=localToTile(o.b,k?bw*u:-.3,k?bh+.3:bh*u); list.push({key:o.b.id+"w"+k,x,z,color:"#d9772a",walking:true,hat:true,hair:"#3a2a1e",legs:"#3a3f4a",ph:k*3}); } }
   drawPeople(list,t);
   const vl=[];
   for (const c of traffic){ const st=carPos(c); vl.push({kind:c.bus?"bus":"car",col:c.col,x:st.tx,z:st.ty,d:st.d,tilt:c.state==="crashed"?c.tilt:0,yaw:c.state==="crashed"?c.yaw:0}); }
@@ -1161,7 +1208,7 @@ const mapCanvas=document.createElement("canvas"); mapCanvas.width=mapCanvas.heig
 function drawMap(){
   const g=mapCanvas.getContext("2d");
   for (let y=0;y<H;y++) for (let x=0;x<W;x++){ const i=y*W+x; g.fillStyle=water[i]?"#58766c":road[i]?"#6e695c":(deco[i]===1||deco[i]===5)?"#55602c":groundColor(i); g.fillRect(x*2,y*2,2,2); }
-  for (const b of S.buildings){ const t=TYPES[b.type]; g.fillStyle=t.roof||"#7fb06a"; g.fillRect(b.x*2,b.y*2,t.size[0]*2,t.size[1]*2); }
+  for (const b of S.buildings){ const t=TYPES[b.type], f=fp(b); g.fillStyle=t.roof||"#7fb06a"; g.fillRect(b.x*2,b.y*2,f[0]*2,f[1]*2); }
 }
 
 function everyone(now){
@@ -1178,23 +1225,23 @@ function everyone(now){
 /* ============================================================
    PLACEMENT + SAVING
    ============================================================ */
-function canPlace(type,x,y){
-  const t=TYPES[type],[w,h]=t.size;
+function canPlace(type,x,y,rot){
+  const t=TYPES[type],[w,h]=fp({type,rot:rot||0});
   if (x<1||y<1||x+w>W-1||y+h>H-1) return {ok:false,why:"Too close to the edge of the map"};
   for (let yy=y;yy<y+h;yy++) for (let xx=x;xx<x+w;xx++){ const i=yy*W+xx; if (water[i]) return {ok:false,why:"Can't build on water"}; if (occ[i]>=0) return {ok:false,why:"Something is already built here"}; if (road[i]) return {ok:false,why:"A road runs through here"}; }
   if (t.biome){ const bi=biome[(y+(h>>1))*W+x+(w>>1)]; if (!t.biome.includes(bi)) return {ok:false,why:"Only on "+t.biome.map(b=>BIOMES[b].toLowerCase()).join(" or ")}; }
   if ((S.me?.credits||0)<t.price) return {ok:false,why:"You need "+fmt(t.price-(S.me?.credits||0))+" more coins"};
   return {ok:true};
 }
-async function placeBuilding(type,x,y){
-  const chk=canPlace(type,x,y); if (!chk.ok){ toast(chk.why); return; }
-  const t=TYPES[type], rec={type,x,y,by:S.uid||"solo",at:Date.now()};
+async function placeBuilding(type,x,y,rot){
+  rot=(rot|0)&3; const chk=canPlace(type,x,y,rot); if (!chk.ok){ toast(chk.why); return; }
+  const t=TYPES[type], now=Date.now(), rec={type,x,y,rot,by:S.uid||"solo",at:now,done:now+buildMs(type)};
   S.me.credits-=t.price; markDirty(true);
   if (S.db){ try { await S.db.collection("buildings").add(rec); } catch(e){ S.me.credits+=t.price; markDirty(true); toast(e&&e.code==="quota_exceeded"?"The town is full: no room left for more buildings.":"Couldn't save that building. Try again."); return; } }
   else { soloState.buildings.push(Object.assign({id:"l"+Date.now()},rec)); saveSolo(); setBuildings(soloState.buildings); }
-  toast("Built a "+t.name,"−"+fmt(t.price));
+  toast("Construction started: "+t.name+" · ready in "+Math.round(buildMs(type)/60000)+" min","−"+fmt(t.price));
   if (!S.me.home){ S.me.home={x:x+1,y:y+1}; markDirty(true); }
-  S.ghost=null; renderDrawer();
+  S.ghost=null; S.ghostLocked=false; S.place=null; cvs.classList.remove("placing"); renderDrawer();
 }
 async function commitRoads(){
   const tiles=[...S.roadTiles], cost=tiles.length*ROAD_PRICE; if (!tiles.length) return;
@@ -1225,11 +1272,11 @@ function saveSolo(){ try { localStorage.setItem(SOLO_KEY,JSON.stringify(soloStat
    ============================================================ */
 function buildingNear(wx,wy){
   const tx=wx/T, ty=wy/T; let best=null, bd=1e9;
-  for (const b of S.buildings){ const [w,h]=TYPES[b.type].size;
+  for (const b of S.buildings){ const [w,h]=fp(b);
     if (tx>=b.x-1&&tx<=b.x+w+1&&ty>=b.y-1&&ty<=b.y+h+1){ const d=Math.hypot(tx-(b.x+w/2),ty-(b.y+h/2)); if (d<bd){ bd=d; best=b; } } }
   return best;
 }
-function startTask(b){ if (!S.control) setControl(true); userInput(); if (S.task) return; if (burningMap(Date.now()).has(b.id)){ toast("The "+TYPES[b.type].name+" is on fire. Wait for the fire brigade."); return; } const t=TYPES[b.type], bon=bonusFor(b); S.task={b,start:performance.now(),secs:t.secs,reward:Math.round(t.reward*(1+bon.pct/100))}; S.target=null; showBuilding(b.id); }
+function startTask(b){ if (underConstruction(b)){ toast("The "+TYPES[b.type].name+" is still being built."); return; } if (!S.control) setControl(true); userInput(); if (S.task) return; if (burningMap(Date.now()).has(b.id)){ toast("The "+TYPES[b.type].name+" is on fire. Wait for the fire brigade."); return; } const t=TYPES[b.type], bon=bonusFor(b); S.task={b,start:performance.now(),secs:t.secs,reward:Math.round(t.reward*(1+bon.pct/100))}; S.target=null; showBuilding(b.id); }
 function finishTask(){ const tk=S.task; S.task=null; S.me.credits+=tk.reward; S.me.earned=(S.me.earned||0)+tk.reward; S.me.tasks=(S.me.tasks||0)+1; markDirty(true); toast(TYPES[tk.b.type].act+" done","+"+tk.reward); if (S.sheet&&S.sheet.kind==="building") showBuilding(tk.b.id); }
 
 /* ============================================================
@@ -1246,8 +1293,9 @@ function openSheet(kind,id,builder){ S.sheet={kind,id}; const sh=$("sheet"); sh.
 function updateChrome(){
   const drawer=S.build; $("drawer").hidden=!drawer; $("dock").hidden=drawer||!!S.sheet;
   $("buildBtn").setAttribute("aria-pressed",String(drawer));
-  if (drawer){ setHint(S.mode==="pave"?"Drag across the map to paint road tiles, then press Pave.": S.mode==="bulldoze"?"Tap one of your own buildings to take it down for half the price back.": S.place?(S.ghost?canPlace(S.place,S.ghost.x,S.ghost.y).why||"Looks good. Tap again to build here.":"Tap the map where you want the "+TYPES[S.place].name+"."):"Pick something to build, or paint roads."); }
-  else if (!S.playing) setHint("");
+  if (drawer){ setHint(S.mode==="pave"?"Drag across the map to paint road tiles, then press Pave.": S.mode==="bulldoze"?"Tap one of your own buildings to take it down for half the price back.": S.place?"":"Pick something to build, or paint roads."); }
+  else if (!S.playing||$("hint").textContent==="Pick something to build, or paint roads."||/^(Drag across|Tap one of)/.test($("hint").textContent)) setHint("");
+  renderPlace();
 }
 function showBuilding(id){
   const b=S.buildings.find(x=>x.id===id); if (!b){ closeSheet(); return; }
@@ -1257,6 +1305,11 @@ function showBuilding(id){
   const reward=Math.round(t.reward*(1+bon.pct/100));
   openSheet("building",id,body=>{
     body.append(el("div",{class:"sheet-head"}, el("div",null, el("h2",null,t.name), el("div",{class:"sub"}, builder+" · "+BIOMES[bi])), closeBtn()));
+    if (underConstruction(b)){ const now=Date.now(), span=Math.max(1,b.done-(b.at||b.done-60000)), prog=Math.min(1,(now-(b.done-span))/span);
+      body.append(el("div",{class:"rows"},el("div",null,el("span",null,"Status"),el("span",null,"Under construction · "+fmtLeft(b.done-now)+" left"))), el("div",{class:"bar"},el("i",{style:"width:"+(prog*100).toFixed(1)+"%"})));
+      body.append(el("p",{class:"note",style:"margin:0"},"Workers are on site. It opens as soon as it's finished."));
+      if (!b.starter && b.by===(S.uid||"solo") && S.playing) body.append(el("button",{class:"soft",onclick:()=>demolish(b)},"Cancel construction · +"+fmt(Math.floor(t.price/2))+" back"));
+      return; }
     const rows=el("div",{class:"rows"});
     rows.append(el("div",null,el("span",null,"Activity"),el("span",null,t.act+" · "+t.secs+" sec")));
     rows.append(el("div",null,el("span",null,"Pays"),el("span",null,"+"+reward+" coins"+(bon.pct?" (incl. +"+bon.pct+"%)":""))));
@@ -1279,7 +1332,7 @@ function showPerson(id){
   const rec=S.players[id]; if (!rec) return;
   const now=Date.now(), p=everyone(now).find(q=>q.id===id); const on = id===S.uid?S.playing:(S.online[id]&&now-S.online[id].seen<15000);
   const built=S.buildings.filter(b=>b.by===id).length;
-  const homeB = rec.home ? S.buildings.find(b=>{ const t=TYPES[b.type]; return rec.home.x>=b.x&&rec.home.x<b.x+t.size[0]&&rec.home.y>=b.y&&rec.home.y<b.y+t.size[1]; }) : null;
+  const homeB = rec.home ? S.buildings.find(b=>{ const f=fp(b); return rec.home.x>=b.x&&rec.home.x<b.x+f[0]&&rec.home.y>=b.y&&rec.home.y<b.y+f[1]; }) : null;
   openSheet("person",id,body=>{
     body.append(el("div",{class:"sheet-head"}, el("span",{class:"avatar",style:"background:"+safeColor(rec.color)}), el("div",null, el("h2",null,rec.name), el("div",{class:"sub"}, on?(p&&p.act?p.act:"Out and about"):(p&&p.act?p.act:"Walking somewhere"))), closeBtn()));
     body.append(el("div",{class:"tiles"},
@@ -1363,10 +1416,26 @@ function renderDrawer(){
   for (const key in TYPES){ const t=TYPES[key]; if (t.cat!==S.cat||t.starter) continue;
     const pv=el("img",{src:previewURL(key),alt:"",width:"116",height:"66",style:"width:116px;height:66px;object-fit:contain"});
     const afford=(S.me?.credits||0)>=t.price;
-    cards.append(el("button",{class:"card","aria-pressed":String(S.place===key),disabled:!afford,title:t.act+" · "+t.secs+"s · +"+t.reward,onclick:()=>{ S.place=key; S.ghost=null; cvs.classList.add("placing"); renderDrawer(); }},
-      pv, el("b",null,t.name), el("span",{class:"p"},fmt(t.price)+" coins"), t.biome?el("span",{class:"lock"},t.biome.map(b=>BIOMES[b]).join(" / ")):null));
+    cards.append(el("button",{class:"card","aria-pressed":String(S.place===key),disabled:!afford,title:t.act+" · "+t.secs+"s · +"+t.reward,onclick:()=>{ S.place=key; S.ghost=null; S.ghostLocked=false; cvs.classList.add("placing"); renderDrawer(); }},
+      pv, el("b",null,t.name), el("span",{class:"p"},fmt(t.price)+" coins · "+Math.round(buildMs(key)/60000)+" min"), t.biome?el("span",{class:"lock"},t.biome.map(b=>BIOMES[b]).join(" / ")):null));
   }
   updateChrome();
+}
+function renderPlace(){
+  const pb=$("placebar"); pb.textContent="";
+  if (!S.build||!S.place){ pb.hidden=true; return; }
+  const t=TYPES[S.place], chk=S.ghost?canPlace(S.place,S.ghost.x,S.ghost.y,S.rot):null;
+  pb.append(el("div",{class:"info"}, el("b",null,t.name+" · "+fmt(t.price)+" coins"),
+      el("span",{class:"why"+(chk?(chk.ok?" ok":" bad"):"")}, chk?(chk.ok?"Good spot. Takes "+Math.round(buildMs(S.place)/60000)+" min to build.":chk.why):"Click or tap the map to choose a spot.")),
+    el("button",{class:"soft",onclick:rotatePlace,title:"Rotate (T)"},"Rotate"),
+    el("button",{class:"soft",onclick:()=>{ S.place=null; S.ghost=null; S.ghostLocked=false; cvs.classList.remove("placing"); renderDrawer(); }},"Cancel"),
+    el("button",{class:"dark",disabled:!(chk&&chk.ok),onclick:()=>{ if (S.ghost) placeBuilding(S.place,S.ghost.x,S.ghost.y,S.rot); }},"Build it"));
+  pb.hidden=false;
+}
+function rotatePlace(){
+  if (!S.place) return; const before=S.ghost?fp({type:S.place,rot:S.rot}):null; S.rot=(S.rot+1)&3;
+  if (S.ghost&&before){ const after=fp({type:S.place,rot:S.rot}); S.ghost={x:S.ghost.x+Math.floor(before[0]/2)-Math.floor(after[0]/2), y:S.ghost.y+Math.floor(before[1]/2)-Math.floor(after[1]/2)}; }
+  renderPlace();
 }
 function toggleBuild(on){
   S.build=on; S.mode="walk"; S.place=null; S.ghost=null; S.roadTiles=new Set(); cvs.classList.remove("placing");
@@ -1387,16 +1456,17 @@ addEventListener("keydown",e=>{
   if (e.target.tagName==="INPUT") return;
   const k=e.key.toLowerCase(); S.keys[k]=true;
   if (["arrowup","arrowdown","arrowleft","arrowright"," "].includes(k)) e.preventDefault();
-  if (k==="escape"){ if (S.build) toggleBuild(false); else closeSheet(); }
+  if (k==="escape"){ if (S.build&&S.place){ S.place=null; S.ghost=null; S.ghostLocked=false; renderDrawer(); } else if (S.build) toggleBuild(false); else closeSheet(); }
   if (k==="c"&&S.playing) setControl(!S.control);
   if (k==="e"&&S.playing&&S.control&&!S.task){ const b=buildingNear(S.pos.x,S.pos.y); if (b) startTask(b); }
   if (k==="b"&&S.playing) toggleBuild(!S.build);
+  if (k==="t"&&S.build&&S.place) rotatePlace();
   if (S.control&&anyKey()){ userInput(); S.target=null; S.follow=true; followId=null; }
 });
 addEventListener("keyup",e=>{ S.keys[e.key.toLowerCase()]=false; });
 cvs.addEventListener("contextmenu",e=>e.preventDefault());
 cvs.addEventListener("wheel",e=>{ e.preventDefault(); cam.dist=Math.max(6,Math.min(230,cam.dist*Math.exp(e.deltaY*.0012))); },{passive:false});
-function ghostFrom(g){ const t=TYPES[S.place]; return {x:Math.floor(g.x)-Math.floor(t.size[0]/2), y:Math.floor(g.z)-Math.floor(t.size[1]/2)}; }
+function ghostFrom(g){ const f=fp({type:S.place,rot:S.rot}); return {x:Math.floor(g.x)-Math.floor(f[0]/2), y:Math.floor(g.z)-Math.floor(f[1]/2)}; }
 function twoPointer(){ const [a,b]=[...pointers.values()]; return {d:Math.hypot(a.x-b.x,a.y-b.y), ang:Math.atan2(b.y-a.y,b.x-a.x)}; }
 cvs.addEventListener("pointerdown",e=>{
   cvs.setPointerCapture(e.pointerId); pointers.set(e.pointerId,{x:e.clientX,y:e.clientY});
@@ -1406,7 +1476,7 @@ cvs.addEventListener("pointerdown",e=>{
   if (drag.painting) paintAt(e.clientX,e.clientY);
 });
 cvs.addEventListener("pointermove",e=>{
-  if (S.place&&e.pointerType==="mouse"&&!pointers.size){ const g=groundAt(e.clientX,e.clientY); if (g){ const gh=ghostFrom(g); if (!S.ghost||S.ghost.x!==gh.x||S.ghost.y!==gh.y){ S.ghost=gh; updateChrome(); } } }
+  if (S.place&&!S.ghostLocked&&e.pointerType==="mouse"&&!pointers.size){ const g=groundAt(e.clientX,e.clientY); if (g){ const gh=ghostFrom(g); if (!S.ghost||S.ghost.x!==gh.x||S.ghost.y!==gh.y){ S.ghost=gh; updateChrome(); } } }
   if (!pointers.has(e.pointerId)) return;
   pointers.set(e.pointerId,{x:e.clientX,y:e.clientY});
   if (pinch&&pointers.size===2){ const n=twoPointer(); cam.dist=Math.max(6,Math.min(230,cam.dist*pinch.d/Math.max(1,n.d))); let da=n.ang-pinch.ang; if (da>Math.PI) da-=2*Math.PI; if (da<-Math.PI) da+=2*Math.PI; cam.az-=da; pinch=n; return; }
@@ -1427,7 +1497,7 @@ function paintAt(sx,sy){ const g=groundAt(sx,sy); if (!g) return; const x=Math.f
 function clickAt(sx,sy,ptype){
   if (S.build&&S.mode==="pave") return;
   const g=groundAt(sx,sy);
-  if (S.build&&S.place){ if (!g) return; const gh=ghostFrom(g); if (ptype==="mouse"||(S.ghost&&S.ghost.x===gh.x&&S.ghost.y===gh.y)){ S.ghost=gh; placeBuilding(S.place,gh.x,gh.y); } else { S.ghost=gh; updateChrome(); } return; }
+  if (S.build&&S.place){ if (!g) return; S.ghost=ghostFrom(g); S.ghostLocked=true; renderPlace(); return; }
   for (const p of hitPeople) if (Math.hypot(p.x-sx,p.y-sy)<22){ showPerson(p.id); return; }
   const b=buildingAt(sx,sy);
   if (S.build&&S.mode==="bulldoze"){ if (b&&!b.starter&&b.by===(S.uid||"solo")) demolish(b); else toast(b?"You can only remove buildings you built":"Tap one of your buildings"); return; }
@@ -1490,6 +1560,7 @@ function tick(nowP){
   cam.tx=Math.max(0,Math.min(W,cam.tx)); cam.tz=Math.max(0,Math.min(H,cam.tz));
   uiAcc+=dt;
   if (uiAcc>.5){ uiAcc=0;
+    if (S.sheet&&S.sheet.kind==="building"){ const sb=S.buildings.find(x=>x.id===S.sheet.id); if (sb&&(underConstruction(sb,now)||(sb.done&&now-sb.done<1500))) showBuilding(sb.id); }
     const gt=gameTime(now), hh=Math.floor(gt.frac*24), mm=Math.floor((gt.frac*24-hh)*6)*10, night=nightAmount(gt.frac)>.5, wth=weatherFor(gt.day);
     $("day").textContent="Day "+gt.day+" · "+String(hh).padStart(2,"0")+":"+String(mm).padStart(2,"0");
     $("weather").innerHTML=(night?ICON.moon:wth==="Drizzle"?ICON.rain:wth==="Cloudy"?ICON.cloud:ICON.sun)+"<span></span>"; $("weather").lastChild.textContent=wth;
