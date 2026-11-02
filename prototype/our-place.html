@@ -30,6 +30,10 @@ button:focus-visible,input:focus-visible{outline:3px solid var(--gold);outline-o
 .coins{display:flex;align-items:center;gap:8px;font-family:var(--display);font-weight:700;font-size:26px;line-height:1;}
 .coin{width:24px;height:24px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#ffe39a,#e2a93a 60%,#c58b25);box-shadow:inset 0 -2px 0 rgb(0 0 0/.12);flex:none;}
 .rate{font-family:var(--body);font-size:12px;font-weight:800;color:var(--green);margin-left:2px;}
+.rate.neg{color:var(--coral);}
+.lvl{border:0;background:none;padding:0;display:grid;gap:4px;justify-items:center;font-family:var(--display);font-weight:700;font-size:16px;}
+.lvl i{display:block;width:44px;height:5px;border-radius:9px;background:var(--cream-3);overflow:hidden;}
+.lvl b{display:block;height:100%;width:0;background:var(--gold);}
 .sep{width:1px;align-self:stretch;background:var(--line);}
 .when{display:grid;gap:1px;}
 .when .d{font-family:var(--display);font-weight:600;font-size:15px;color:var(--muted);}
@@ -143,7 +147,9 @@ input[type=text]:focus{border-color:var(--gold);outline:none;}
 
 <div class="top">
   <div class="panel status">
-    <div class="coins"><span class="coin" aria-hidden="true"></span><span class="num" id="credits">0</span><span class="rate" id="rate" hidden>+1/s</span></div>
+    <div class="coins"><span class="coin" aria-hidden="true"></span><span class="num" id="credits">0</span><span class="rate" id="rate">+0/min</span></div>
+    <div class="sep"></div>
+    <button class="lvl" id="lvlBtn" title="City level"><span id="lvl">Lv 1</span><i><b id="lvlBar"></b></i></button>
     <div class="sep"></div>
     <div class="when"><span class="d" id="day">Day 1 · 08:00</span><span class="w" id="weather"></span></div>
   </div>
@@ -221,14 +227,14 @@ petshop|Pet Shop|Shops|2|2|300|Feed the puppies|Feeding puppies|5|15|shop|#f0e6d
 barber|Barber|Shops|2|2|220|Give a haircut|Cutting hair|5|13|shop|#f2eee6|#3f4a7a|20|SBARBER A#c9493a
 salon|Beauty Salon|Shops|2|2|340|Paint some nails|Doing nails|6|18|shop|#f6e6ee|#c97a9a|20|SSALON A#c97a9a
 laundry|Laundromat|Shops|2|2|200|Fold the laundry|Folding laundry|5|11|shop|#e2ecf2|#6f9fc8|18|SLAUNDRY A#6f9fc8
-mall|Shopping Mall|Shops|5|4|2400|Go window-shopping|Window-shopping|9|48|flat|#ebe3d6|#a59a8c|34|SMALL L
+mall|Shopping Mall|Shops|6|5|3000|Go window-shopping|Window-shopping|9|48|flat|#ebe3d6|#a59a8c|34|SMALL L
 giftshop|Gift Shop|Shops|2|2|260|Wrap presents|Wrapping presents|5|13|shop|#f4e2d2|#d4685a|20|SGIFTS A#e8b44a
 musicstore|Music Store|Shops|2|2|380|Tune a guitar|Tuning guitars|6|19|shop|#7a6a6a|#e8b44a|22|SMUSIC A#e8b44a
 sports|Sports Store|Shops|3|2|480|Pump up footballs|Pumping footballs|6|22|shop|#e6eef2|#2f6fb0|20|SSPORTS A#2f6fb0
 jeweller|Jeweller|Shops|2|2|900|Polish rings|Polishing rings|7|30|shop|#f4efe2|#b8902a|22|SJEWELS A#b8902a
 market|Market|Shops|3|2|300|Sell goods|Selling goods|6|22|shop|#efe6d6|#b55c4c|20|SMARKET A#c9493a
 carwash|Car Wash|Shops|3|2|350|Wash a car|Washing cars|6|17|flat|#dfe9f0|#4fa59c|16|SCAR_WASH
-petrol|Petrol Station|Shops|3|3|600|Pump fuel|Pumping fuel|5|20|flat|#f2f0ea|#d4574a|16|SFUEL
+petrol|Petrol Station|Shops|3|3|600|Pump fuel|Pumping fuel|5|20|petrol|#f2f0ea|#d4574a|16|SFUEL
 cafe|Café|Food|2|2|220|Grab a coffee|Having coffee|5|14|shop|#efe4cf|#a9584a|20|SCAFÉ A#5d8b57 L
 bakery|Bakery|Food|2|2|260|Bake bread|Baking bread|6|16|shop|#f3e2c6|#b8743a|20|SBAKERY A#b8743a C
 pizzeria|Pizzeria|Food|2|2|320|Toss a pizza|Making pizza|6|18|shop|#f2e6d4|#c9493a|20|SPIZZA A#5d8b57
@@ -243,13 +249,13 @@ grill|Barbecue Grill|Food|3|2|380|Grill skewers|Grilling|6|19|shop|#d9c2a0|#6b3a
 donuts|Donut Shop|Food|2|2|230|Glaze donuts|Glazing donuts|5|13|shop|#fbe9d6|#d98bb0|18|SDONUTS A#d98bb0
 office|Office|Work|3|3|600|Work a shift|Working|8|40|flat|#c9cfd6|#7a8592|72|
 bank|Bank|Work|3|3|1100|Count money|Counting money|8|46|civic|#e9e3d6|#6f7f99|28|SBANK
-techcampus|Tech Campus|Work|4|4|2200|Write some code|Coding|9|58|flat|#4a586a|#2a3442|48|STECH
+techcampus|Tech Campus|Work|6|5|4000|Write some code|Coding|9|58|flat|#4a586a|#2a3442|48|STECH
 studio|Design Studio|Work|2|2|500|Sketch a logo|Designing|7|26|flat|#e6ddd0|#d4685a|30|SSTUDIO
 newspaper|Newspaper Office|Work|3|2|650|Write a story|Writing a story|7|30|flat|#d8d2c4|#3b322c|30|SDAILY_NEWS
 radio|Radio Station|Work|2|2|600|Host a show|On air|7|28|flat|#d9cfc0|#6f5a8a|26|SRADIO
 callcentre|Call Centre|Work|3|3|550|Answer calls|Answering calls|7|26|flat|#c4ccd2|#5a6a78|40|SCALL_CENTRE
 lawfirm|Law Firm|Work|3|2|900|Review contracts|Reviewing contracts|8|38|civic|#e2dccd|#4a4f5a|26|SLAW
-skyscraper|Skyscraper|Work|3|3|3000|Close a big deal|Closing deals|10|70|flat|#9fb3c8|#5a6a80|130|
+skyscraper|Skyscraper|Work|4|4|5000|Close a big deal|Closing deals|10|70|flat|#9fb3c8|#5a6a80|130|
 cowork|Co-working Space|Work|3|2|450|Join a meeting|In a meeting|6|24|flat|#efe6d6|#5d8b57|28|SCOWORK
 postoffice|Post Office|Work|3|2|420|Sort the letters|Sorting mail|6|22|civic|#d9c8a8|#b5503f|22|SPOST
 lab|Research Lab|Work|3|3|1500|Run an experiment|Experimenting|9|52|flat|#eef1f2|#6fb0b0|36|SLAB
@@ -260,28 +266,28 @@ recycling|Recycling Plant|Industry|4|3|800|Sort recycling|Sorting recycling|8|40
 textile|Textile Mill|Industry|4|3|850|Weave cloth|Weaving|9|44|factory|#c9a28a|#6b4a3a|26|
 printworks|Print Works|Industry|3|3|600|Run the press|Printing|7|32|factory|#c4bcb0|#4a5563|22|
 breadfactory|Bread Factory|Industry|4|3|750|Knead dough|Kneading dough|8|38|factory|#e6d2b0|#a9584a|24|
-powerplant|Power Plant|Industry|4|4|2000|Check the turbines|Checking turbines|10|66|factory|#b8b8b4|#6b6b68|34|
+powerplant|Power Plant|Industry|6|5|4000|Check the turbines|Checking turbines|10|66|factory|#b8b8b4|#6b6b68|34|
 waterworks|Water Works|Industry|3|3|900|Test the water|Testing water|8|40|dome|#d8e0e6|#6f9fc8|18|
 busdepot|Bus Depot|Industry|4|3|800|Service a bus|Servicing buses|8|36|flat|#d8d2c4|#e8b44a|20|SBUS_DEPOT
 playground|Playground|Fun|2|2|150|Play|Playing|5|12|playground|#ead6a6|#e8b44a|0|L
-park|Park|Fun|3|3|120|Go for a walk|Strolling|5|10|park|#9fc585|#7fb06a|0|L
+park|Park|Fun|3|3|120|Go for a walk|Strolling|5|10|park|#9fc585|#7fb06a|0|L Z
 gym|Gym|Fun|3|2|450|Work out|Working out|7|28|flat|#a7b4bf|#5b6873|22|SGYM
 cinema|Cinema|Fun|3|3|550|Watch a film|Watching a film|8|26|flat|#7d5a7e|#4a3550|30|SCINEMA L
 bowling|Bowling Alley|Fun|3|3|650|Bowl a strike|Bowling|7|28|flat|#e6dcf0|#7a5aa0|24|SBOWLING L
 arcade|Arcade|Fun|2|2|480|Beat the high score|Gaming|6|22|flat|#4a3f6c|#d98bb0|22|SARCADE L
 pool|Swimming Pool|Fun|3|3|700|Swim some laps|Swimming|7|26|pool|#e8eef0|#6fb6d9|0|L
-stadium|Stadium|Fun|5|5|3500|Cheer on the team|Cheering|10|70|stadium|#d8d2c4|#c9493a|22|L
-skatepark|Skate Park|Fun|3|3|300|Land a kickflip|Skating|5|14|plaza|#cfcac2|#9a9590|0|L
-garden|Botanical Garden|Fun|4|4|900|Smell the roses|Exploring the garden|7|26|park|#9fc585|#7fb06a|0|L
-square|Town Square|Fun|3|3|250|Feed the pigeons|People-watching|5|11|plaza|#e6dccb|#bfb4a2|0|L
+stadium|Stadium|Fun|8|7|6000|Cheer on the team|Cheering|10|70|stadium|#d8d2c4|#c9493a|22|L
+skatepark|Skate Park|Fun|3|3|300|Land a kickflip|Skating|5|14|plaza|#cfcac2|#9a9590|0|L Z
+garden|Botanical Garden|Fun|4|4|900|Smell the roses|Exploring the garden|7|26|park|#9fc585|#7fb06a|0|L Z
+square|Town Square|Fun|3|3|250|Feed the pigeons|People-watching|5|11|plaza|#e6dccb|#bfb4a2|0|L Z
 theatre|Theatre|Fun|3|3|1000|Watch a play|Watching a play|9|38|civic|#c9a0a0|#6b2f3a|30|STHEATRE L
 karaoke|Karaoke Bar|Fun|2|2|420|Sing a duet|Singing|6|20|flat|#5a3a6a|#e8b44a|20|SKARAOKE L
-zoo|Zoo|Fun|5|4|2600|Feed the giraffes|Visiting the animals|9|52|park|#a9c98a|#7fb06a|0|L
-minigolf|Mini Golf|Fun|3|3|380|Sink a putt|Putting|6|18|park|#8fc27a|#7fb06a|0|L
+zoo|Zoo|Fun|8|6|4500|Feed the giraffes|Visiting the animals|9|52|park|#a9c98a|#7fb06a|0|L
+minigolf|Mini Golf|Fun|3|3|380|Sink a putt|Putting|6|18|park|#8fc27a|#7fb06a|0|L Z
 fairground|Fairground|Fun|4|4|1400|Ride the big wheel|On the rides|8|40|fair|#e6dccb|#d4685a|0|L
 library|Library|Learning|3|3|400|Read books|Reading|6|25|civic|#d9c8a8|#7a4a3c|24|SLIBRARY
 school|School|Learning|4|3|700|Study|Studying|7|32|gable|#b88a68|#6b4a3e|22|SSCHOOL
-college|College|Learning|4|4|1600|Attend a lecture|In a lecture|9|50|civic|#d9c2a0|#6b4a3e|30|SCOLLEGE
+college|College|Learning|5|5|2600|Attend a lecture|In a lecture|9|50|civic|#d9c2a0|#6b4a3e|30|SCOLLEGE
 kindergarten|Kindergarten|Learning|3|2|500|Read a story aloud|Reading aloud|6|20|gable|#f2d6a8|#d4685a|16|SKINDER
 museum|Museum|Learning|4|3|1400|Study the fossils|Exploring exhibits|8|42|civic|#e9e3d6|#8a8a8a|28|SMUSEUM
 gallery|Art Gallery|Learning|3|2|900|Curate a show|Curating|7|34|flat|#f4f2ee|#3b322c|24|SGALLERY
@@ -289,36 +295,74 @@ science|Science Centre|Learning|4|3|1500|Launch a model rocket|Experimenting|8|4
 musicschool|Music School|Learning|3|2|650|Practise piano|Practising piano|7|28|gable|#d9c8b8|#5a4a6a|20|SMUSIC_SCHOOL
 langschool|Language School|Learning|2|2|480|Learn some French|Studying French|6|22|flat|#e6dccb|#4f78a3|26|SLANGUAGES
 townhall|Town Hall|Services|4|3|0|Do the paperwork|Doing paperwork|6|30|civic|#e9e3d6|#6f7f99|30|T STOWN_HALL
-hospital|Hospital|Services|4|4|1200|Volunteer|Volunteering|10|55|flat|#f1efea|#c9cdd0|46|X SHOSPITAL
+hospital|Hospital|Services|6|5|2400|Volunteer|Volunteering|10|55|flat|#f1efea|#c9cdd0|46|X SHOSPITAL
 fire|Fire Station|Services|3|2|650|Run a drill|Running a drill|8|35|flat|#c9574a|#7d3a32|24|SFIRE
 police|Police Station|Services|3|2|700|Go on patrol|On patrol|8|36|flat|#4f6f9a|#2f3f5a|24|SPOLICE
 clinic|Clinic|Services|2|2|600|Do check-ups|Doing check-ups|7|30|flat|#f1efea|#5aa6a0|22|X SCLINIC
 vet|Vet|Services|2|2|520|Treat a puppy|Treating pets|7|26|shop|#eef2ea|#5d8b57|20|SVET A#5d8b57
 courthouse|Courthouse|Services|4|3|1300|Serve on a jury|On jury duty|9|44|civic|#ece6da|#6f6a60|30|SCOURT
 community|Community Centre|Services|3|3|500|Help out|Volunteering|7|24|gable|#d8c3a0|#5d8b57|20|SCOMMUNITY L
-busstation|Bus Station|Services|3|2|400|Wait for a bus|Waiting for a bus|5|12|flat|#e2dccd|#e8b44a|14|SBUS
-trainstation|Train Station|Services|5|3|1800|Catch a train|Travelling|9|46|civic|#d9c8a8|#5a4a3a|26|SSTATION
+busstation|Bus Station|Transport|3|2|400|Wait for a bus|Waiting for a bus|5|12|flat|#e2dccd|#e8b44a|14|SBUS
+trainstation|Train Station|Transport|7|4|3200|Catch a train|Travelling|9|46|civic|#d9c8a8|#5a4a3a|26|SSTATION
 wastedepot|Waste Depot|Services|3|3|450|Empty the bins|Collecting rubbish|7|24|flat|#9aa38c|#5a6a4a|18|
-farm|Farm|Land|4|4|500|Harvest|Harvesting|9|45|farm|#9fb86a|#d8c46a|0|B01
-ranch|Ranch|Land|4|4|700|Ride the horses|Riding|8|36|farm|#b9c98a|#a9c47a|0|B0
+farm|Farm|Land|4|4|500|Harvest|Harvesting|9|45|farm|#9fb86a|#d8c46a|0|B01 Z
+ranch|Ranch|Land|4|4|700|Ride the horses|Riding|8|36|farm|#b9c98a|#a9c47a|0|B0 Z
 mine|Mine|Land|3|3|800|Dig for ore|Digging|10|62|mine|#a8957c|#8d7b64|0|B0
 quarry|Quarry|Land|4|4|900|Split stone|Quarrying|10|60|mine|#bdb3a6|#9a9086|0|B0
-windfarm|Wind Farm|Land|3|3|850|Climb a turbine|Servicing turbines|8|42|wind|#cfc7a8|#e9e6df|0|B0
+windfarm|Wind Farm|Land|3|3|850|Climb a turbine|Servicing turbines|8|42|wind|#cfc7a8|#e9e6df|0|B0 Z
 greenhouse|Greenhouse|Land|3|3|500|Water the seedlings|Gardening|6|26|glass|#cfe6dc|#a9d2c4|14|B01
 sawmill|Sawmill|Land|3|3|700|Cut timber|Cutting timber|9|50|gable|#9c7650|#56402c|18|B1 SSAWMILL
 cabin|Forest Cabin|Land|2|2|250|Light a campfire|By the campfire|6|18|gable|#7a4a2a|#b0803a|14|B1 R2 C
 lodge|Forest Lodge|Land|3|3|700|Chop firewood|Chopping firewood|7|30|gable|#6e4529|#a8783a|18|B1 R4 C
 ranger|Ranger Tower|Land|2|2|350|Watch for fires|On fire watch|7|26|tower|#8b6a45|#4d6b3a|46|B1
-orchard|Orchard|Land|4|4|600|Pick apples|Picking apples|7|32|orchard|#a9c493|#7fb06a|0|B1
-beefarm|Bee Farm|Land|3|3|450|Collect honey|Beekeeping|6|24|farm|#e8c95a|#c9b07a|0|B1
-solar|Solar Farm|Land|4|4|750|Clean the panels|Cleaning panels|7|38|solar|#e1cfa2|#3d5a86|0|B2
+orchard|Orchard|Land|4|4|600|Pick apples|Picking apples|7|32|orchard|#a9c493|#7fb06a|0|B1 Z
+beefarm|Bee Farm|Land|3|3|450|Collect honey|Beekeeping|6|24|farm|#e8c95a|#c9b07a|0|B1 Z
+solar|Solar Farm|Land|4|4|750|Clean the panels|Cleaning panels|7|38|solar|#e1cfa2|#3d5a86|0|B2 Z
 spa|Oasis Spa|Land|3|3|600|Relax in the pool|Relaxing|6|22|dome|#efdcb6|#5aa6a0|18|B2 L
 observatory|Observatory|Land|3|3|900|Stargaze|Stargazing|8|40|dome|#e7e1d4|#8b93a8|24|B2
 bazaar|Desert Bazaar|Land|3|2|400|Trade spices|Trading spices|6|24|shop|#e8cf9c|#b06a3a|18|B2 SBAZAAR A#c46a2b
 camel|Camel Stables|Land|3|3|550|Ride a camel|Riding camels|7|30|farm|#e2c992|#d1b67e|0|B2
-dates|Date Palm Grove|Land|4|4|600|Harvest dates|Harvesting dates|8|34|orchard|#e6d4aa|#7fb06a|0|B2
-saltworks|Salt Works|Land|4|3|650|Rake the salt|Raking salt|8|34|farm|#f6f2ea|#e6e0d2|0|B2
+dates|Date Palm Grove|Land|4|4|600|Harvest dates|Harvesting dates|8|34|orchard|#e6d4aa|#7fb06a|0|B2 Z
+saltworks|Salt Works|Land|4|3|650|Rake the salt|Raking salt|8|34|farm|#f6f2ea|#e6e0d2|0|B2 Z
 resort|Desert Resort|Land|4|4|1800|Lounge by the pool|Lounging|8|46|dome|#f2e2c2|#c46a2b|20|B2 L
+parking|Parking Lot|Transport|2|2|80|Park the car|Parking|5|6|parking|#5f5b52|#e8e2cc|0|Z
+parkgarage|Parking Garage|Transport|4|3|900|Find a space|Parking|5|10|garage|#bdb6aa|#8a8478|40|SPARKING
+metro|Metro Station|Transport|2|2|700|Catch the metro|Riding the metro|5|14|flat|#d9d2c4|#c0533f|14|SMETRO
+ferry|Ferry Terminal|Transport|5|3|2200|Catch the ferry|Sailing|8|40|flat|#e2dccd|#4f7fa8|22|SFERRY
+regional|Regional Airport|Transport|10|7|12000|Catch a flight|Flying|10|80|airport|#e9e4da|#7a8592|20|SAIRPORT
+airport|International Airport|Transport|16|10|25000|Board a long-haul flight|Flying|10|120|airport|#eef0f2|#6f7f99|26|SAIRPORT
+port|Container Port|Industry|12|8|15000|Unload containers|Unloading ships|10|90|port|#b9b2a6|#4f7fa8|0|
+refinery|Refinery|Industry|8|6|9000|Check the pipes|Checking pipes|10|70|refinery|#d8d4cc|#8a8478|0|
+carfactory|Car Factory|Industry|8|6|7000|Assemble a car|Assembling cars|10|65|factory|#c4ccd2|#5a6a78|30|SMOTORS
+logistics|Distribution Centre|Industry|8|6|4500|Sort parcels|Sorting parcels|8|48|flat|#d8d2c4|#d9a23a|26|SPARCELS
+steelmill|Steel Mill|Industry|7|5|6500|Pour steel|Pouring steel|10|62|factory|#8a8478|#5a524c|34|
+datacentre|Data Centre|Work|5|4|5000|Fix a server|Fixing servers|8|50|flat|#cfd6dc|#2f3a44|28|SDATA
+hotel|Hotel|Work|4|3|2400|Check in guests|Checking in guests|7|36|flat|#e6dccb|#8a5a3a|80|SHOTEL
+grandhotel|Grand Hotel|Work|6|4|6000|Run the front desk|Running the desk|8|52|civic|#f0e8d8|#7a3a3a|60|SGRAND_HOTEL
+corporate|Corporate HQ|Work|5|5|8500|Lead a board meeting|In a board meeting|10|80|flat|#8fa6bd|#3f4f63|180|SHQ
+convention|Convention Centre|Work|8|6|6500|Host an expo|Hosting an expo|9|58|flat|#e9e4da|#4f7fa8|30|SEXPO
+tvstudio|TV Studio|Work|5|4|3800|Read the news|On camera|8|42|flat|#d9d2c4|#c0533f|30|STV
+highrise|Highrise Condos|Homes|4|4|3200|Water the rooftop garden|Gardening|7|24|flat|#d8cbb8|#7b7068|120|R30
+penthouse|Luxury Tower|Homes|4|4|7500|Enjoy the view|Relaxing|8|30|flat|#c9d2da|#4f5a66|160|R24
+dealer|Car Dealership|Shops|5|4|3500|Sell a car|Selling cars|8|44|flat|#eef0f2|#c0533f|22|SCARS
+deptstore|Department Store|Shops|5|4|4000|Restock the floors|Restocking|8|46|civic|#e8dcc6|#7a4a3c|40|SDEPARTMENT_STORE
+hypermarket|Hypermarket|Shops|7|5|6500|Run the checkouts|On the checkouts|8|56|flat|#e9e4da|#3f8f5a|26|SHYPERMARKET
+gardencentre|Garden Centre|Shops|4|4|1300|Pot some plants|Potting plants|6|24|glass|#cfe6dc|#a9d2c4|16|SGARDEN
+amusement|Amusement Park|Fun|10|10|9000|Ride the coaster|Riding the coaster|10|70|amusement|#cfc6a8|#c0533f|0|L
+golf|Golf Course|Fun|8|8|3600|Play nine holes|Golfing|10|40|golf|#7fae55|#9fc66a|0|L Z
+arena|Concert Arena|Fun|8|7|7000|See a concert|At a concert|10|62|dome|#d9d2c4|#6a4f7a|36|SARENA L
+icerink|Ice Rink|Fun|4|4|1800|Skate some laps|Ice skating|7|26|flat|#dfe9f0|#6f9fc8|22|SICE_RINK L
+aquarium|Aquarium|Fun|5|4|3000|Watch the sharks|Visiting the aquarium|8|34|flat|#4f7fa8|#2f4f6a|24|SAQUARIUM L
+opera|Opera House|Fun|6|5|5500|Hear an opera|At the opera|10|54|flat|#efe8da|#f4f1ea|26|SOPERA L
+waterpark|Water Park|Fun|7|6|4200|Ride the slides|Splashing|8|40|waterpark|#e8eef0|#6fb6d9|0|L
+university|University|Learning|9|7|7000|Give a lecture|Lecturing|10|66|campus|#d9c2a0|#6b4a3e|30|SUNIVERSITY
+planetarium|Planetarium|Learning|4|4|2600|Watch the stars|Stargazing|8|36|dome|#e8e4dc|#3f4f6a|20|SPLANETARIUM
+cityhall|City Hall|Services|6|5|5000|Sign new laws|Signing laws|9|56|civic|#efe8da|#5f6f88|40|SCITY_HALL
+medcentre|Medical Centre|Services|6|5|5200|Run the ward|On the ward|10|60|flat|#f1efea|#5aa6a0|60|X SMEDICAL_CENTRE
+watertreat|Water Treatment|Services|6|5|3800|Test the tanks|Testing water|8|40|refinery|#d8e0e6|#6f9fc8|0|
+lighthouse|Lighthouse|Services|2|2|900|Light the lamp|Keeping the light|7|24|lighthouse|#f2efe8|#c0533f|60|
+vineyard|Vineyard|Land|4|4|900|Pick grapes|Picking grapes|8|36|farm|#6f8a45|#7a5a6a|0|B01 Z
+launch|Rocket Launch Site|Land|9|9|20000|Launch a rocket|Launching a rocket|10|110|launch|#cfc6b4|#e9e6df|0|B2
 `;
 const CAT_GLOW={Homes:"#ffbf6b",Shops:"#ffcf8a",Food:"#ffb36b",Work:"#9fd0ff",Industry:"#ffb36b",Fun:"#c98bff",Learning:"#ffd28a",Services:"#9effd9",Land:"#ffcf8a"};
 const TYPES={};
@@ -328,10 +372,15 @@ for (const line of CATALOG.trim().split("\n")){
   const t={name,cat,size:[+w,+h],price:+price,act,verb,secs:+secs,reward:+reward,style,wall,roof,H:+Hh,RH:Math.round(8+Math.min(+w,+h)*3),glow:CAT_GLOW[cat]||"#ffd28a"};
   for (const fl of flags.split(/\s+/).filter(Boolean)){ const k=fl[0], v=fl.slice(1);
     if (k==="R") t.residents=+v; else if (k==="L") t.leisure=true; else if (k==="C") t.chimney=true; else if (k==="X") t.cross=true;
-    else if (k==="A") t.awning=v; else if (k==="B") t.biome=v.split("").map(Number); else if (k==="T") t.starter=true; else if (k==="S") t.sign=v.replace(/_/g," "); }
+    else if (k==="A") t.awning=v; else if (k==="B") t.biome=v.split("").map(Number); else if (k==="T") t.starter=true; else if (k==="S") t.sign=v.replace(/_/g," "); else if (k==="Z") t.resize=true; else if (k==="U") t.lvl=+v; }
+  t.ppt=t.price/(t.size[0]*t.size[1]);                     // price per tile (resizable plots)
+  if (!t.lvl) t.lvl=[300,700,1200,2000,3000,5000,8000,12000,18000].findIndex(v=>t.price<=v)+1||10;
+  // income per minute into the treasury: businesses earn, public services cost upkeep, homes pay tax
+  const IR={Shops:.02,Food:.022,Work:.02,Industry:.025,Land:.02,Transport:.015,Fun:.014,Learning:-.004,Services:-.004,Homes:0};
+  t.income = t.residents ? t.residents*1.5 : (t.leisure&&!t.sign&&t.cat==="Fun") ? -.3*t.size[0]*t.size[1]/4 : t.price*(IR[cat]||0);
   TYPES[key]=t;
 }
-const CATS=["Homes","Shops","Food","Work","Industry","Fun","Learning","Services","Land"];
+const CATS=["Homes","Shops","Food","Work","Industry","Fun","Learning","Services","Transport","Land"];
 
 /* ============================================================
    NOISE + TERRAIN
@@ -383,11 +432,26 @@ let floraDirty=true, roadDirty=true, buildingsDirty=true;
 const inMap=(x,y)=>x>=0&&y>=0&&x<W&&y<H;
 /* rotation (0-3 quarter turns) and construction helpers */
 const ROT_OFF=(w,h,r)=>[[0,0],[h,0],[w,h],[0,w]][r&3];
-function fp(b){ const s=TYPES[b.type].size, r=(b.rot|0)&3; return r%2?[s[1],s[0]]:[s[0],s[1]]; }
-function buildMs(type){ const [w,h]=TYPES[type].size; return Math.round(Math.max(1,Math.min(15,1+(w*h-4)*14/21))*60000); }   // 2×2 → 1 min … 5×5 → 15 min
+function baseSize(b){ const t=TYPES[b.type]; return (t.resize&&b.sw&&b.sh)?[b.sw,b.sh]:t.size; }
+function fp(b){ const s=baseSize(b), r=(b.rot|0)&3; return r%2?[s[1],s[0]]:[s[0],s[1]]; }
+function priceFor(type,w,h){ const t=TYPES[type]; return t.resize&&w&&h?Math.round(t.ppt*w*h):t.price; }
+function priceOf(b){ const [w,h]=baseSize(b); return priceFor(b.type,w,h); }
+function incomeOf(b){ const t=TYPES[b.type], [w,h]=baseSize(b); return t.resize?t.income*(w*h)/(t.size[0]*t.size[1]):t.income; }
+const tgOf=b=>{ const [w,h]=baseSize(b); return typeGeo(b.type,w,h); };
+function buildMs(type,w,h){ const s=TYPES[type].size; w=w||s[0]; h=h||s[1]; return Math.round(Math.max(1,Math.min(15,1+(w*h-4)*14/21))*60000); }   // 2×2 → 1 min … 5×5 → 15 min
 function underConstruction(b,now){ return !!(b&&b.done&&(now||Date.now())<b.done); }
-function localToTile(b,lx,lz){ const [w,h]=TYPES[b.type].size, r=(b.rot|0)&3, o=ROT_OFF(w,h,r); let x=lx,z=lz;
+function localToTile(b,lx,lz){ const [w,h]=baseSize(b), r=(b.rot|0)&3, o=ROT_OFF(w,h,r); let x=lx,z=lz;
   if (r===1){ x=-lz; z=lx; } else if (r===2){ x=-lx; z=-lz; } else if (r===3){ x=lz; z=-lx; } return [b.x+o[0]+x, b.y+o[1]+z]; }
+/* ---------- city treasury and level: computed, never stored as one number (see plan §7) ---------- */
+const START_TREASURY=4000, LEVELS=[0,3000,6000,12000,22000,36000,58000,90000,140000,210000];
+function cityStart(){ let t=Infinity; for (const id in S.players){ const c=S.players[id]&&S.players[id].created; if (c&&c<t) t=c; } return isFinite(t)?t:Date.now(); }
+function cityRate(now){ now=now||Date.now(); let r=0; for (const b of S.buildings) if (!underConstruction(b,now)) r+=incomeOf(b); return r; }
+function passiveIncome(now){ const cs=cityStart(); let sum=0; for (const b of S.buildings){ const from=Math.max(b.done||cs,cs); if (now>from) sum+=incomeOf(b)*(now-from)/60000; } return sum; }
+function accrued(b,now){ const cs=cityStart(), from=Math.max(b.done||cs,cs); return now>from?incomeOf(b)*(now-from)/60000:0; }
+function treasury(now){ now=now||Date.now(); let e=0; for (const id in S.players){ const p=S.players[id]; if (p) e+=(p.earned||0)+(p.banked||0)-(p.spent||0); } return START_TREASURY+e+passiveIncome(now); }
+function cityXP(now){ now=now||Date.now(); let xp=0, pop=0, tasks=0; for (const b of S.buildings){ if (underConstruction(b,now)) continue; xp+=priceOf(b)*(b.starter?.5:1); pop+=TYPES[b.type].residents||0; } for (const id in S.players) tasks+=(S.players[id]&&S.players[id].tasks)||0; return xp+pop*25+tasks*5; }
+function cityLevel(xp){ let l=1; for (let i=0;i<LEVELS.length;i++) if (xp>=LEVELS[i]) l=i+1; return l; }
+function fmtRate(r){ const a=Math.abs(r); return (r>=0?"+":"−")+(a<10?(Math.round(a*10)/10).toLocaleString("en-US"):fmt(a)); }
 function fmtLeft(ms){ const s=Math.max(0,Math.ceil(ms/1000)), m=Math.floor(s/60); return m?m+"m "+String(s%60).padStart(2,"0")+"s":s+"s"; }
 
 function rebuildCity(){
@@ -438,7 +502,7 @@ function candidatesFor(id,home){
   c=S.buildings.filter(b=>!underConstruction(b)).map(b=>{ const s=fp(b); return {b,d:Math.hypot(b.x+s[0]/2-home.x,b.y+s[1]/2-home.y)+hash2(hashStr(id)&65535,hashStr(b.id)&65535,3)*14}; }).sort((a,b)=>a.d-b.d).slice(0,12).map(s=>s.b);
   destCache.set(id,c); return c;
 }
-function door(b){ const [w,h]=TYPES[b.type].size, [x,z]=localToTile(b,w/2,h+.4); return {x:x*T, y:z*T}; }
+function door(b){ const [w,h]=baseSize(b), [x,z]=localToTile(b,w/2,h+.4); return {x:x*T, y:z*T}; }
 function destAt(id,home,k){ const c=candidatesFor(id,home); return c.length ? c[Math.floor(hash2(hashStr(id)&0xffffff,k,11)*c.length)] : null; }
 function autoState(id,home,now){
   const k=Math.floor(now/SLOT), a=destAt(id,home,k-1), b=destAt(id,home,k);
@@ -788,34 +852,182 @@ class GB{
   finish(){ return {geo:mergeGeos(this.p,true), win:this.w.length?mergeGeos(this.w,false):null, glass:this.g.length?mergeGeos(this.g,false):null, spin:this.spin, emit:this.emit}; }
 }
 const isWood=hex=>{ const c=new THREE.Color(hex); return c.r>c.g*1.15 && c.g>c.b*1.1 && c.r<.75; };
+
+/* ---------- every type gets its own roof + feature set, so no two buildings share a design ---------- */
+const DESIGN={
+  cottage:"porch fence", bungalow:"roof:hip porch", townhouse:"roof:steep dormer bay", terrace:"chim2 fence", duplex:"roof:shed garage",
+  villa:"roof:hip tower fence", mansion:"roof:mansard tower flag", apartment:"balcony tank", towerblock:"balcony antenna setback", loft:"roof:sawtooth glassfront",
+  halls:"roof:barrel balcony", retire:"roof:hip porch", highrise:"balcony greenroof setback", penthouse:"glassfront setback helipad",
+  grocer:"crates mascot:apple", supermarket:"canopy glassfront solarroof", florist:"planters mascot:flower", bookshop:"bay mascot:book", hardware:"garage mascot:key",
+  pharmacy:"mascot:cross", boutique:"roof:mansard bay", toyshop:"mascot:blocks", electronics:"glassfront mascot:tv", furniture:"glassfront mascot:sofa",
+  petshop:"mascot:paw", barber:"pole", salon:"bay mascot:heart", laundry:"tank mascot:bubbles", mall:"glassfront roof:barrel canopy", giftshop:"mascot:gift",
+  musicstore:"mascot:note", sports:"mascot:ball", jeweller:"mascot:gem", market:"crates", carwash:"arch mascot:car", dealer:"glassfront lotcars flag",
+  deptstore:"roof:mansard clock", hypermarket:"canopy glassfront lotcars", gardencentre:"planters",
+  cafe:"mascot:cup", bakery:"mascot:bread", pizzeria:"mascot:pizza", diner:"roof:barrel marquee", sushi:"roof:hip lanterns", icecream:"mascot:icecream",
+  teahouse:"roof:hip lanterns porch", restaurant:"porch flag", foodcourt:"canopy umbrellas", juicebar:"mascot:juice", grill:"mascot:grill chim2", donuts:"mascot:donut",
+  office:"antenna", bank:"roof:dome flag", techcampus:"glassfront greenroof solarroof", studio:"roof:sawtooth", newspaper:"clock antenna", radio:"mast",
+  callcentre:"setback tank", lawfirm:"roof:mansard flag", skyscraper:"glassfront spire", cowork:"greenroof glassfront", postoffice:"flag garage", lab:"domeroof antenna",
+  datacentre:"solarroof units", hotel:"balcony canopy flag", grandhotel:"roof:mansard canopy flag tower", corporate:"glassfront spire helipad", convention:"roof:barrel glassfront canopy", tvstudio:"mast mascot:tv",
+  factory:"roof:sawtooth stacks", warehouse:"roof:barrel garage", bottler:"silos conveyor", recycling:"roof:shed bins", textile:"roof:sawtooth tank", printworks:"roof:shed stacks",
+  breadfactory:"silos roof:barrel", powerplant:"cooling stacks", waterworks:"tanksground", busdepot:"garage lotbuses", carfactory:"roof:sawtooth garage lotcars", logistics:"garage roof:shed", steelmill:"stacks silos",
+  gym:"glassfront mascot:dumbbell", cinema:"marquee", bowling:"mascot:pin", arcade:"marquee mascot:controller", theatre:"marquee", karaoke:"mascot:mic",
+  arena:"canopy flag", icerink:"roof:barrel", aquarium:"roof:barrel glassfront mascot:fish", opera:"sails",
+  library:"clock", school:"flag tower", college:"tower clock", kindergarten:"fence porch", museum:"roof:dome flag", gallery:"glassfront sculpture", science:"antenna mascot:rocket",
+  musicschool:"mascot:note dormer", langschool:"flag balcony", planetarium:"antenna",
+  hospital:"helipad canopy", fire:"garage hosetower", police:"garage flag lightbar", clinic:"canopy", vet:"mascot:cross fence", courthouse:"roof:dome flag",
+  community:"porch flag", busstation:"canopy", trainstation:"clock roof:barrel", wastedepot:"bins garage", cityhall:"roof:dome clock flag", medcentre:"helipad canopy setback",
+  metro:"canopy arch", ferry:"roof:barrel flag", parkgarage:"",
+  ranch:"fence", beefarm:"hives", camel:"fence", saltworks:"", vineyard:"trellis", sawmill:"logs", cabin:"porch logs", lodge:"porch chim2", spa:"palms", bazaar:"umbrellas", resort:"palms",
+};
+function designOf(key){ const out={tokens:new Set()}; for (const tok of (DESIGN[key]||"").split(/\s+/).filter(Boolean)){ const [a,b]=tok.split(":"); if (b) out[a]=b; else out.tokens.add(a); } return out; }
+
+/* roof shapes on top of a wall box (x,y,z,w,d) */
+function makeRoof(gb,kind,x,y,z,w,d,rh,roof,wall){
+  const oh=.1;
+  if (kind==="steep") return gb.gable(x,y,z,w,d,rh*1.6,roof,wall), rh*1.6;
+  if (kind==="hip"||kind==="mansard"||kind==="pyramid"){
+    const top=kind==="pyramid"?.02:kind==="mansard"?.62:.35, hh=kind==="mansard"?rh*.75:rh;
+    const g=new THREE.CylinderGeometry(.70710678*top,.70710678,hh,4,1); g.rotateY(Math.PI/4); g.scale(w+oh*2,1,d+oh*2); g.translate(x+w/2,y+hh/2,z+d/2); gb.add(g,roof);
+    if (kind==="mansard") gb.box(x+w*.2,y+hh,z+d*.2,w*.6,.05,d*.6,shade(roof,.85));
+    return hh;
+  }
+  if (kind==="shed"){ const Y=y+rh*.8;
+    gb.tris([x-oh,Y,z-oh, x+w+oh,Y,z-oh, x+w+oh,y,z+d+oh, x-oh,Y,z-oh, x+w+oh,y,z+d+oh, x-oh,y,z+d+oh],roof);
+    gb.tris([x,y,z, x,Y,z, x,y,z+d, x+w,y,z, x+w,Y,z, x+w,y,z+d, x,y,z, x+w,y,z, x+w,Y,z, x,y,z, x+w,Y,z, x,Y,z],wall);
+    return rh*.8; }
+  if (kind==="barrel"){ const along=w>=d, len=along?w:d, r=(along?d:w)/2;
+    const g=new THREE.CylinderGeometry(r,r,len+.1,10,1,false,0,Math.PI); g.rotateZ(Math.PI/2); if (!along) g.rotateY(Math.PI/2); g.scale(1,.75,1); g.translate(x+w/2,y,z+d/2); gb.add(g,roof); return r*.75; }
+  if (kind==="sawtooth"){ const n=Math.max(2,Math.round(d/.9)), L=d/n, Y=rh*.7;
+    for (let k=0;k<n;k++){ const z0=z+k*L, z1=z0+L;
+      gb.tris([x,y,z0, x+w,y,z0, x+w,y+Y,z1, x,y,z0, x+w,y+Y,z1, x,y+Y,z1],roof);
+      gb.tris([x,y,z1, x+w,y,z1, x+w,y+Y,z1, x,y,z1, x+w,y+Y,z1, x,y+Y,z1],"#7f9aa8");
+      gb.tris([x,y,z0, x,y,z1, x,y+Y,z1, x+w,y,z0, x+w,y,z1, x+w,y+Y,z1],wall); }
+    return Y; }
+  if (kind==="dome"){ gb.dome(x+w/2,y,z+d/2,Math.min(w,d)*.42,roof); return Math.min(w,d)*.42; }
+  gb.gable(x,y,z,w,d,rh,roof,wall); return rh;
+}
+
+/* rooftop "mascot" signs that say what a shop sells */
+function mascot(gb,kind,cx,y,cz){
+  const C={apple:"#c0392b",flower:"#d9789a",book:"#4f7fa8",key:"#d9a23a",cross:"#3f9a6a",blocks:"#d9a23a",tv:"#2f3a44",sofa:"#8a5a8a",paw:"#6b4a3a",heart:"#d4685a",gift:"#c0392b",note:"#3b322c",ball:"#f2efe8",gem:"#6fb6d9",car:"#c0533f",cup:"#efe8da",bread:"#c98a4a",pizza:"#e8b44a",icecream:"#f4c2d2",juice:"#f0a030",grill:"#2f2a28",donut:"#e89ab4",dumbbell:"#3b3b3b",pin:"#f4f1ea",controller:"#5a4f7a",mic:"#3b3b3b",fish:"#e8823a",rocket:"#f2efe8",bubbles:"#bfe3f2"};
+  const c=C[kind]||"#d9a23a", s=.35; y+=.08;
+  switch(kind){
+    case "donut": { const g=new THREE.TorusGeometry(.28,.12,6,12); g.translate(cx,y+.4,cz); gb.add(g,c); gb.box(cx-.05,y,cz-.05,.1,.12,.1,"#7a6a5a"); break; }
+    case "icecream": gb.cone(cx,y,cz,.16,.42,"#d9a86a",6,Math.PI); { const g=new THREE.ConeGeometry(.16,.42,6); g.rotateX(Math.PI); g.translate(cx,y+.21,cz); gb.add(g,"#d9a86a"); } gb.ico(cx,y+.52,cz,.2,c); gb.ico(cx,y+.7,cz,.14,"#fff1e0"); break;
+    case "cup": gb.cyl(cx,y,cz,.2,.34,c,8,.24); { const g=new THREE.TorusGeometry(.1,.035,4,8); g.translate(cx+.26,y+.18,cz); gb.add(g,c); } gb.cyl(cx,y+.34,cz,.2,.02,"#6b4a2e",8); break;
+    case "pizza": { const g=new THREE.CylinderGeometry(.38,.38,.06,8,1,false,0,Math.PI*1.7); g.rotateX(-Math.PI/2.4); g.translate(cx,y+.42,cz); gb.add(g,c); for (let k=0;k<4;k++) gb.ico(cx-.18+k*.12,y+.4+(k%2)*.12,cz+.04,.04,"#b8432f"); break; }
+    case "bread": gb.ico(cx,y+.22,cz,.3,c,.55); for (let k=0;k<3;k++) gb.box(cx-.15+k*.12,y+.36,cz-.18,.03,.02,.36,"#a86a3a"); break;
+    case "pin": gb.ico(cx,y+.25,cz,.18,c,1.3); gb.ico(cx,y+.55,cz,.11,c); gb.box(cx-.11,y+.37,cz-.11,.22,.04,.22,"#c0392b"); break;
+    case "book": gb.box(cx-.3,y,cz-.05,.28,.4,.06,c,[0,.3,0]); gb.box(cx+.02,y,cz-.05,.28,.4,.06,"#efe8da",[0,-.3,0]); break;
+    case "gem": { const g=new THREE.OctahedronGeometry(.28,0); g.scale(1,1.2,1); g.translate(cx,y+.38,cz); gb.add(g,c); break; }
+    case "fish": gb.ico(cx,y+.3,cz,.26,c,.6); gb.cone(cx-.32,y+.18,cz,.14,.24,c,4); gb.ico(cx+.12,y+.36,cz+.2,.04,"#1e1a18"); break;
+    case "note": gb.ico(cx-.08,y+.12,cz,.12,c,.8); gb.box(cx+.02,y+.12,cz-.02,.04,.5,.04,c); gb.box(cx+.02,y+.52,cz-.02,.22,.06,.04,c); break;
+    case "ball": gb.ico(cx,y+.28,cz,.26,c); gb.ico(cx,y+.28,cz,.27,"#2f2a28",.25); break;
+    case "car": gb.box(cx-.36,y,cz-.18,.72,.16,.36,c); gb.box(cx-.18,y+.16,cz-.15,.36,.14,.3,"#2e3a44"); break;
+    case "tv": gb.box(cx-.32,y+.1,cz-.04,.64,.42,.08,c); gb.box(cx-.27,y+.15,cz+.041,.54,.32,.01,"#6fb6d9"); gb.box(cx-.05,y,cz-.04,.1,.1,.08,c); break;
+    case "sofa": gb.box(cx-.36,y,cz-.14,.72,.16,.28,c); gb.box(cx-.36,y+.16,cz-.14,.72,.2,.08,c); break;
+    case "cross": gb.box(cx-.07,y,cz-.03,.14,.48,.06,c); gb.box(cx-.22,y+.17,cz-.03,.44,.14,.06,c); break;
+    case "heart": gb.ico(cx-.1,y+.36,cz,.14,c); gb.ico(cx+.1,y+.36,cz,.14,c); gb.cone(cx,y+.06,cz,.2,.28,c,4,Math.PI/4); { const g=new THREE.ConeGeometry(.22,.3,4); g.rotateX(Math.PI); g.translate(cx,y+.2,cz); gb.add(g,c); } break;
+    case "gift": gb.box(cx-.22,y,cz-.22,.44,.36,.44,c); gb.box(cx-.03,y,cz-.23,.06,.37,.46,"#e8b44a"); gb.box(cx-.23,y,cz-.03,.46,.37,.06,"#e8b44a"); break;
+    case "blocks": gb.box(cx-.3,y,cz-.1,.2,.2,.2,"#c0533f"); gb.box(cx-.08,y,cz-.1,.2,.2,.2,"#4f7fa8"); gb.box(cx-.2,y+.2,cz-.1,.2,.2,.2,"#e8b44a"); break;
+    case "paw": gb.ico(cx,y+.18,cz,.16,c,.5); for (let k=0;k<4;k++) gb.ico(cx-.18+k*.12,y+.36,cz,.06,c); break;
+    case "key": gb.cyl(cx-.2,y+.2,cz,.12,.06,c,8); gb.box(cx-.1,y+.2,cz-.03,.4,.06,.06,c); gb.box(cx+.2,y+.12,cz-.03,.05,.1,.06,c); break;
+    case "apple": gb.ico(cx,y+.25,cz,.24,c); gb.box(cx-.02,y+.45,cz-.02,.04,.12,.04,"#5a4030"); gb.ico(cx+.08,y+.52,cz,.06,"#5d8b3a",.5); break;
+    case "flower": gb.box(cx-.02,y,cz-.02,.04,.35,.04,"#5d8b3a"); for (let k=0;k<5;k++) gb.ico(cx+Math.cos(k*1.26)*.12,y+.42+Math.sin(k*1.26)*.12,cz,.08,c); gb.ico(cx,y+.42,cz+.02,.06,"#e8b44a"); break;
+    case "juice": gb.cyl(cx,y,cz,.16,.42,c,8,.2); gb.box(cx+.04,y+.38,cz-.015,.03,.24,.03,"#f2efe8",[0,0,-.3]); break;
+    case "grill": gb.dome(cx,y+.3,cz,.24,c); gb.cyl(cx,y+.28,cz,.24,.02,c,8); for (const a of [-1,1]) gb.box(cx+a*.15,y,cz-.02,.03,.3,.03,"#5a524c"); break;
+    case "dumbbell": gb.box(cx-.3,y+.18,cz-.03,.6,.06,.06,c); gb.cyl(cx-.3,y+.06,cz,.12,.3,c,8); gb.cyl(cx+.3,y+.06,cz,.12,.3,c,8); break;
+    case "controller": gb.box(cx-.3,y+.1,cz-.12,.6,.16,.24,c); gb.ico(cx+.16,y+.28,cz,.04,"#c0533f"); gb.ico(cx-.16,y+.28,cz,.04,"#e8b44a"); break;
+    case "mic": gb.box(cx-.03,y,cz-.03,.06,.35,.06,c); gb.ico(cx,y+.42,cz,.12,"#9a9a9a"); break;
+    case "rocket": gb.cyl(cx,y,cz,.12,.5,c,8); gb.cone(cx,y+.5,cz,.12,.22,"#c0533f",8); gb.box(cx-.2,y,cz-.02,.4,.12,.04,"#c0533f"); break;
+    case "bubbles": for (let k=0;k<4;k++) gb.ico(cx-.2+k*.14,y+.15+(k%2)*.2,cz,.1+k*.02,c); break;
+    default: gb.ico(cx,y+.25,cz,.22,c);
+  }
+}
+
+/* features (porches, balconies, towers, signs, rooftop gear, site props) */
+function applyTraits(gb,D,t,G){
+  const {x,z,ww,dd,Hh,F,w,h}=G; let top=G.top; const T=D.tokens, has=k=>T.has(k), roofY=G.roofY;
+  if (has("porch")){ gb.box(x,0,F,ww,.06,.46,"#8a6a45"); for (let k=0;k<4;k++) gb.box(x+.05+k*(ww-.15)/3,.06,F+.38,.05,Math.min(.62,Hh*.6),.05,"#efe6d6"); gb.box(x-.05,Math.min(.68,Hh*.66),F,ww+.1,.05,.52,t.roof); }
+  if (has("fence")){ for (let k=0;k<Math.floor(w*3);k++) gb.box(.08+k/3,0,h-.08,.04,.22,.03,"#efe6d6"); gb.box(.06,.14,h-.08,w-.12,.03,.03,"#efe6d6"); }
+  if (has("bay")){ for (const fx of [.22,.78]) { gb.box(x+ww*fx-.24,.12,F,.48,Math.min(1.1,Hh*.6),.16,shade(t.wall,.95)); gb.win(x+ww*fx-.18,.3,F+.16,.36,Math.min(.6,Hh*.35),.02); } }
+  if (has("dormer")){ for (const fx of [.3,.7]){ gb.box(x+ww*fx-.15,Hh+.05,z+dd*.68,.3,.26,.24,t.wall); gb.gable(x+ww*fx-.15,Hh+.31,z+dd*.68,.3,.24,.14,t.roof,t.wall,.03); gb.win(x+ww*fx-.08,Hh+.1,z+dd*.68+.24,.16,.14,.02); } }
+  if (has("balcony")){ for (let y=.75;y<Hh-.25;y+=.55){ gb.box(x+.12,y,F,ww-.24,.04,.24,"#cfc8ba"); gb.box(x+.12,y+.04,F+.21,ww-.24,.14,.025,"#8a8478"); } }
+  if (has("glassfront")) gb.win(x+.1,.08,F+.005,ww-.2,Math.max(.3,Hh-.3),.03);
+  if (has("canopy")){ gb.box(x+ww/2-.55,Math.min(.62,Hh*.5),F,1.1,.05,.6,shade(t.roof,1.1)); gb.box(x+ww/2-.5,0,F+.52,.04,Math.min(.62,Hh*.5),.04,"#5a524c"); gb.box(x+ww/2+.46,0,F+.52,.04,Math.min(.62,Hh*.5),.04,"#5a524c"); }
+  if (has("garage")){ const n=Math.max(1,Math.min(4,Math.floor(ww/.8))); for (let k=0;k<n;k++) gb.box(x+.15+k*(ww-.3)/n,0,F,(ww-.3)/n-.12,Math.min(.62,Hh*.55),.03,k%2?"#6b6b6b":"#5f5f5f"); }
+  if (has("marquee")){ gb.box(x+ww*.15,Hh*.55,F,ww*.7,.32,.18,"#2f2a28"); for (let k=0;k<10;k++) gb.win(x+ww*.15+.04+k*(ww*.7-.08)/9,Hh*.55+.29,F+.18,.04,.04,.02); }
+  if (has("arch")){ gb.box(x+ww/2-.5,0,F+.1,.1,.75,.1,shade(t.wall,.9)); gb.box(x+ww/2+.4,0,F+.1,.1,.75,.1,shade(t.wall,.9)); gb.box(x+ww/2-.5,.75,F+.1,1,.12,.1,t.roof); }
+  if (has("pole")){ for (let k=0;k<5;k++) gb.cyl(x+.2,.1+k*.09,F+.08,.04,.09,k%2?"#f2efe8":"#c0392b",6); gb.cyl(x+.2,.55,F+.08,.045,.05,"#4f7fa8",6); }
+  if (has("tower")){ const tx=x+ww-.6, th=Hh*1.5+.4; gb.box(tx,0,z,.6,th,.6,t.wall); gb.win(tx+.2,th-.45,z+.6,.2,.22,.02); const g=new THREE.ConeGeometry(.5,.6,4); g.rotateY(Math.PI/4); g.translate(tx+.3,th+.3,z+.3); gb.add(g,t.roof); top=Math.max(top,th+.6); }
+  if (has("hosetower")){ gb.box(x+ww-.5,0,z,.45,Hh*1.9,.45,t.wall); gb.box(x+ww-.55,Hh*1.9,z-.05,.55,.08,.55,t.roof); top=Math.max(top,Hh*1.9+.1); }
+  if (has("clock")){ const cx=x+ww/2, cz=z+dd/2, base=roofY; gb.box(cx-.25,base,cz-.25,.5,.75,.5,shade(t.wall,1.05)); gb.cyl(cx,base+.4,cz+.255,.16,.015,"#f8f4ea",10); { const g=new THREE.ConeGeometry(.38,.45,4); g.rotateY(Math.PI/4); g.translate(cx,base+.75+.22,cz); gb.add(g,t.roof); } top=Math.max(top,base+1.2); }
+  if (has("flag")){ gb.cyl(x+.2,roofY,z+.2,.02,.8,"#cfcac0",4); gb.box(x+.21,roofY+.58,z+.19,.32,.2,.02,"#c0533f"); top=Math.max(top,roofY+.8); }
+  if (has("tank")){ const cx=x+ww*.75, cz=z+dd*.3; for (const [a,b] of [[-1,-1],[1,-1],[-1,1],[1,1]]) gb.box(cx+a*.12-.02,Hh,cz+b*.12-.02,.04,.3,.04,"#6b5a4a"); gb.cyl(cx,Hh+.3,cz,.2,.35,"#8a6a45",8); gb.cone(cx,Hh+.65,cz,.22,.15,"#5a4a3a",8); top=Math.max(top,Hh+.8); }
+  if (has("antenna")){ gb.cyl(x+ww*.7,roofY,z+dd*.6,.025,1.2,"#9a9a9a",4); gb.ico(x+ww*.7,roofY+1.22,z+dd*.6,.05,"#d9433a"); top=Math.max(top,roofY+1.3); }
+  if (has("mast")){ const cx=x+ww*.7, cz=z+dd*.5; for (let k=0;k<6;k++) gb.box(cx-.1+k*.0,roofY+k*.45,cz-.1,.2,.04,.2,"#c0533f"); for (const [a,b] of [[-1,-1],[1,-1],[-1,1],[1,1]]) gb.box(cx+a*.09-.015,roofY,cz+b*.09-.015,.03,2.7,.03,k2(a,b)); gb.ico(cx,roofY+2.75,cz,.06,"#ff4d3a"); top=Math.max(top,roofY+2.8); }
+  if (has("spire")){ const cx=x+ww/2, cz=z+dd/2; gb.box(cx-ww*.25,roofY,cz-dd*.25,ww*.5,.7,dd*.5,shade(t.wall,.92)); gb.cyl(cx,roofY+.7,cz,.05,1.6,"#cfd6dc",6,.01); top=Math.max(top,roofY+2.3); }
+  if (has("setback")){ const sx=x+ww*.15, sz=z+dd*.15, sw=ww*.7, sd=dd*.7, sh=Math.max(.6,Hh*.3); gb.box(sx,roofY,sz,sw,sh,sd,t.wall); gb.box(sx-.03,roofY+sh,sz-.03,sw+.06,.06,sd+.06,t.roof); gb.windows(sx,sz,sw,sd,roofY,roofY+sh,false); top=Math.max(top,roofY+sh+.1); G.roofY2=roofY+sh+.06; }
+  const RY=G.roofY2||roofY;
+  if (has("helipad")){ const cx=x+ww/2, cz=z+dd/2; gb.cyl(cx,RY,cz,Math.min(ww,dd)*.32,.03,"#3f4650",12); gb.box(cx-.16,RY+.03,cz-.2,.06,.01,.4,"#f2efe8"); gb.box(cx+.1,RY+.03,cz-.2,.06,.01,.4,"#f2efe8"); gb.box(cx-.12,RY+.03,cz-.03,.26,.01,.06,"#f2efe8"); }
+  if (has("solarroof")) for (let k=0;k<Math.floor(ww/.6);k++) gb.box(x+.15+k*.6,RY+.05,z+.2,.5,.03,dd*.5,"#2f4a74",[.35,0,0]);
+  if (has("greenroof")){ gb.box(x+.1,RY,z+.1,ww-.2,.05,dd-.2,"#6f8a45"); for (let k=0;k<5;k++) gb.ico(x+.3+hash2(k,1,3)*(ww-.6),RY+.12,z+.3+hash2(k,2,3)*(dd-.6),.12,"#5d7f3a"); }
+  if (has("units")) for (let k=0;k<Math.floor(ww/.55);k++) for (let j=0;j<2;j++) gb.box(x+.15+k*.55,RY,z+.3+j*.6,.4,.22,.4,"#a8a49a");
+  if (has("domeroof")) gb.dome(x+ww*.35,RY,z+dd*.45,Math.min(ww,dd)*.28,"#e9e6df");
+  if (has("chim2")){ for (const fx of [.2,.8]){ gb.box(x+ww*fx-.09,Hh*.5,z+dd*.4,.18,Hh*.5+G.rh*.9,.18,"#7a5a4a"); gb.emit.push([x+ww*fx,Hh+G.rh*.9+.08,z+dd*.4+.09,"chimney"]); } }
+  if (has("stacks")){ for (const fx of [.2,.42]){ gb.cyl(x+ww*fx,RY,z+.4,.14,1.6,"#7a5e4a",8,.11); gb.emit.push([x+ww*fx,RY+1.65,z+.4,"factory"]); } top=Math.max(top,RY+1.7); }
+  if (has("silos")) for (let k=0;k<2;k++){ gb.cyl(x+ww-.35,0,z+.35+k*.7,.3,Hh+.9,"#cfc7b6",10); gb.dome(x+ww-.35,Hh+.9,z+.35+k*.7,.3,"#9a9a9a"); }
+  if (has("cooling")) for (let k=0;k<2;k++){ const cx=x+ww-.9-k*1.6, cz=z+dd-.9; gb.cyl(cx,0,cz,.75,1.0,"#d8d4cc",12,.55); gb.cyl(cx,1,cz,.55,.9,"#d8d4cc",12,.68); gb.emit.push([cx,2,cz,"factory"]); top=Math.max(top,2); }
+  if (has("conveyor")) gb.box(x-.05,Hh*.5,F-.2,ww+.1,.06,.12,"#5a524c",[0,0,.12]);
+  if (has("bins")) for (let k=0;k<4;k++) gb.box(x+.15+k*.4,0,F+.15,.3,.3,.3,["#3f8f5a","#4f7fa8","#d9a23a","#7a7a7a"][k]);
+  if (has("tanksground")) for (let k=0;k<3;k++) gb.cyl(x+.5+k*.9,0,F+.5,.35,.5,"#cfd6dc",10);
+  if (has("lotcars")||has("lotbuses")) for (let k=0;k<Math.floor(ww/.7);k++){ const col=has("lotbuses")?"#d9a23a":CAR_COL[k%CAR_COL.length]; gb.box(x+.15+k*.7,0,F+.25,has("lotbuses")?.35:.32,.16,has("lotbuses")?.9:.55,col); gb.box(x+.18+k*.7,.16,F+.38,.26,.1,.3,"#2e3a44"); }
+  if (has("crates")) for (let k=0;k<4;k++) gb.box(x+.12+k*.32,0,F+.4,.24,.18,.22,k%2?"#c98a4a":"#a86a3a");
+  if (has("planters")) for (let k=0;k<4;k++){ gb.box(x+.15+k*.4,0,F+.35,.28,.14,.2,"#8a6a45"); gb.ico(x+.29+k*.4,.22,F+.45,.13,["#d9789a","#e8b44a","#5d8b3a","#c0533f"][k]); }
+  if (has("lanterns")) for (let k=0;k<4;k++) gb.ico(x+.2+k*(ww-.4)/3,Hh*.88,F+.12,.06,"#d9433a",1.3);
+  if (has("umbrellas")) for (let k=0;k<3;k++){ const ux=x+.4+k*(ww-.8)/2; gb.box(ux-.015,0,F+.55,.03,.5,.03,"#5a524c"); gb.cone(ux,.45,F+.56,.32,.16,["#c0533f","#e8b44a","#4f7fa8"][k],8); }
+  if (has("hives")) for (let k=0;k<5;k++) gb.box(.4+k*.5,0,h-.5,.26,.28,.22,"#e8c95a");
+  if (has("trellis")) for (let r=0;r<Math.floor(h*1.4);r++) gb.box(.3,.1,.35+r*.68,w-.6,.25,.06,"#5d7f3a");
+  if (has("logs")) for (let k=0;k<3;k++){ const g=new THREE.CylinderGeometry(.09,.09,1,6); g.rotateZ(Math.PI/2); g.translate(x+ww/2,.09+(k>1?.16:0),F+.35+(k%2)*.18+(k>1?.09:0)); gb.add(g,"#8a6a45"); }
+  if (has("palms")) for (const [a,b] of [[.08,.15],[.92,.2],[.1,.88]]) gb.palm(w*a,h*b,1);
+  if (has("lightbar")) gb.box(x+ww/2-.2,Hh+.08,F-.15,.4,.06,.1,"#3b6bff");
+  if (has("sculpture")){ gb.box(x+ww/2-.12,0,F+.3,.24,.2,.24,"#cfc8ba"); gb.ico(x+ww/2,.4,F+.42,.2,"#c0533f",1.4); }
+  if (has("sails")){ for (let k=0;k<4;k++){ const sx=x+.4+k*(ww-.8)/3, s=.9+k*.25; gb.tris([sx-.45,Hh,z+.3, sx+.45,Hh,z+.3, sx,Hh+s,z+dd*.6, sx-.45,Hh,z+.3, sx,Hh+s,z+dd*.6, sx,Hh,F-.1],"#f4f1ea"); gb.tris([sx+.45,Hh,z+.3, sx,Hh,F-.1, sx,Hh+s,z+dd*.6],"#e2ddd2"); } top=Math.max(top,Hh+1.7); }
+  if (D.mascot){ mascot(gb,D.mascot,x+ww/2,RY,z+dd*.45); top=Math.max(top,RY+.9); }
+  return top;
+  function k2(){ return "#c0533f"; }
+}
+
 const TYPEGEO={};
-function typeGeo(key){
-  if (TYPEGEO[key]) return TYPEGEO[key];
-  const t=TYPES[key], [w,h]=t.size, gb=new GB(), x=.14, z=.14, ww=w-.28, dd=h-.28, Hh=Math.max(.3,t.H*HS), RH=(t.RH||10)*HS*1.15, F=z+dd;
-  let top=Hh, signAt=null;
+function typeGeo(key,w0,h0){
+  const t=TYPES[key], w=w0||t.size[0], h=h0||t.size[1], ck=key+":"+w+"x"+h;
+  if (TYPEGEO[ck]) return TYPEGEO[ck];
+  const D=designOf(key), gb=new GB(), x=.14, z=.14, ww=w-.28, dd=h-.28, Hh=Math.max(.3,t.H*HS), RH=(t.RH||10)*HS*1.15, F=z+dd;
+  let top=Hh, signAt=null, roofY=Hh+.08;
   const slab=(col,hh)=>gb.box(.04,0,.04,w-.08,hh||.05,h-.08,col);
   switch (t.style){
     case "gable":
       gb.box(x-.03,0,z-.03,ww+.06,.08,dd+.06,"#7d776a");
       gb.box(x,0,z,ww,Hh,dd,t.wall);
       if (isWood(t.wall)) for (let k=1;k<=3;k++) gb.box(x-.012,Hh*k/4-.012,z-.012,ww+.024,.024,dd+.024,shade(t.wall,.75));
-      gb.gable(x,Hh,z,ww,dd,RH,t.roof,t.wall);
+      const rh1=makeRoof(gb,D.roof||"gable",x,Hh,z,ww,dd,RH,t.roof,t.wall); roofY=Hh;
       if (t.chimney){ gb.box(x+ww*.68,Hh*.5,z+dd*.22,.18,Hh*.5+RH*.95,.18,"#7a6a5a"); gb.emit.push([x+ww*.68+.09,Hh+RH*.95+.08,z+dd*.22+.09,"chimney"]); }
       gb.door(x,z,ww,dd,Hh); gb.windows(x,z,ww,dd,0,Hh,true);
-      top=Hh+RH; signAt={y:Hh*.7,z:F};
+      top=Hh+rh1; signAt={y:Hh*.7,z:F};
       break;
     case "civic": {
       gb.box(x-.08,0,z-.08,ww+.16,.1,dd+.34,"#cfc7b6");
-      gb.box(x,0,z,ww,Hh,dd,t.wall); gb.gable(x,Hh,z,ww,dd,RH,t.roof,t.wall);
+      gb.box(x,0,z,ww,Hh,dd,t.wall); const rhc=makeRoof(gb,D.roof||"gable",x,Hh,z,ww,dd,RH,t.roof,t.wall); roofY=Hh;
       const n=Math.max(4,Math.round(ww*1.6)); for (let k=0;k<n;k++) gb.cyl(x+.15+k*(ww-.3)/(n-1),.1,F+.15,.045,Hh-.18,"#f2ede2",6);
       gb.box(x,Hh-.08,F,ww,.08,.24,shade(t.wall,.95));
       gb.door(x,z,ww,dd,Hh); gb.windows(x,z,ww,dd,0,Hh,true);
-      top=Hh+RH;
+      top=Hh+rhc;
       if (key==="townhall"){ const cx=x+ww/2, cz=z+dd/2; gb.box(cx-.35,Hh,cz-.35,.7,RH+.8,.7,"#efe8da"); gb.cone(cx,Hh+RH+.8,cz,.55,.7,"#5f6f88",4,Math.PI/4); gb.cyl(cx,Hh+RH+.42,cz+.35,.17,.02,"#f8f4ea",10); top=Hh+RH+1.5; }
       signAt={y:Hh*.83,z:F+.25};
       break; }
     case "shop": {
       gb.box(x,0,z,ww,Hh,dd,t.wall); gb.box(x-.05,Hh,z-.05,ww+.1,.07,dd+.1,t.roof);
+      if (D.roof){ roofY=Hh+.07+makeRoof(gb,D.roof,x,Hh+.07,z,ww,dd,RH,t.roof,t.wall); }
       const n=Math.max(5,Math.round(ww*4)); for (let k=0;k<n;k++) gb.box(x+k*ww/n,Hh*.55,F+.02,ww/n,.03,.34,k%2?"#f6f0e2":(t.awning||t.roof),[-.38,0,0]);
       gb.win(x+.12,.1,F,ww*.34,Hh*.36,.03); gb.win(x+ww*.54,.1,F,ww*.34,Hh*.36,.03);
       gb.box(x+ww/2-.11,0,F,.22,Math.min(.42,Hh*.48),.035,"#3e2c20");
@@ -824,6 +1036,7 @@ function typeGeo(key){
       break; }
     case "flat": case "factory": {
       gb.box(x,0,z,ww,Hh,dd,t.wall); gb.box(x-.03,Hh,z-.03,ww+.06,.08,dd+.06,t.roof);
+      if (D.roof){ roofY=Hh+.08+makeRoof(gb,D.roof,x,Hh+.08,z,ww,dd,RH,t.roof,t.wall); }
       gb.box(x+ww*.2,Hh+.08,z+dd*.3,.4,.18,.3,"#9a968e");
       if (t.style==="factory"){ gb.cyl(x+.35,Hh,z+.35,.16,1.4,"#7a5e4a",8,.12); gb.emit.push([x+.35,Hh+1.45,z+.35,"factory"]); }
       if (t.cross){ gb.box(x+ww/2-.08,Hh+.08,z+dd/2-.3,.16,.03,.6,"#c9443a"); gb.box(x+ww/2-.3,Hh+.08,z+dd/2-.08,.6,.03,.16,"#c9443a"); }
@@ -855,13 +1068,13 @@ function typeGeo(key){
       top=.8; break;
     case "farm": {
       slab(shade(t.roof,.8));
-      for (let r=0;r<7;r++) gb.box(.25,0,.3+r*(h*.6/7),w*.85,.09,.2,r%2?t.wall:t.roof);
+      { const n=Math.max(5,Math.round(h*1.7)); for (let r=0;r<n;r++) gb.box(.25,0,.3+r*(h*.6/n),w*.85,.09,.2,r%2?t.wall:t.roof); }
       gb.box(.3,0,h-1.35,1.3,.6,1,"#9a3b2e"); gb.gable(.3,.6,h-1.35,1.3,1,.45,"#5a4030","#9a3b2e"); gb.box(.85,0,h-.35,.22,.36,.02,"#3e2c20");
       gb.cyl(w-.7,0,h-.9,.28,1.1,"#cfc7b6",8); gb.dome(w-.7,1.1,h-.9,.28,"#8a8a8a");
       top=1.4; break; }
     case "solar":
       slab("#d8c08d");
-      for (let r=0;r<4;r++) for (let c=0;c<3;c++){ const px=.3+c*(w-.5)/3, pz=.3+r*(h-.5)/4, pw=(w-.5)/3-.2, pd=(h-.5)/4-.3; gb.box(px+pw/2-.02,0,pz+pd/2,.04,.2,.04,"#7a7a7a"); gb.box(px,.2,pz,pw,.03,pd,"#2f4a74",[.5,0,0]); }
+      { const NC=Math.max(2,Math.floor(w/1.3)), NR=Math.max(2,Math.floor(h/1)); for (let r=0;r<NR;r++) for (let c=0;c<NC;c++){ const px=.3+c*(w-.5)/NC, pz=.3+r*(h-.5)/NR, pw=(w-.5)/NC-.2, pd=(h-.5)/NR-.3; gb.box(px+pw/2-.02,0,pz+pd/2,.04,.2,.04,"#7a7a7a"); gb.box(px,.2,pz,pw,.03,pd,"#2f4a74",[.5,0,0]); } }
       top=.5; break;
     case "mine":
       slab(t.wall); gb.ico(w*.45,0,h*.45,Math.min(w,h)*.38,t.roof,.6);
@@ -895,28 +1108,124 @@ function typeGeo(key){
       top=2.4; break; }
     case "wind":
       slab(t.wall);
-      for (const [a,b] of [[.28,.3],[.72,.45],[.38,.8]]){ const px=w*a, pz=h*b; gb.cyl(px,0,pz,.06,2.2,"#ebe8e1",6,.035); gb.box(px-.08,2.13,pz-.14,.16,.13,.26,"#dcd8cf");
+      { const spots=[]; for (let i=0;i<Math.max(1,Math.floor(w/2.2));i++) for (let j=0;j<Math.max(1,Math.floor(h/2.2));j++) spots.push([(i+.5)/Math.max(1,Math.floor(w/2.2))+((j%2)?.06:-.06),(j+.5)/Math.max(1,Math.floor(h/2.2))]);
+      for (const [a,b] of spots){ const px=w*a, pz=h*b; gb.cyl(px,0,pz,.06,2.2,"#ebe8e1",6,.035); gb.box(px-.08,2.13,pz-.14,.16,.13,.26,"#dcd8cf");
         const bl=new GB(); for (let k=0;k<3;k++){ const g=new THREE.BoxGeometry(.07,.85,.02); g.translate(0,.43,0); g.rotateZ(k*2.094); bl.add(g,"#f2efe8"); } bl.ico(0,0,0,.06,"#cfcac0");
-        gb.spin.push({geo:bl.finish().geo,pos:[px,2.2,pz+.14],speed:1.6+a}); }
+        gb.spin.push({geo:bl.finish().geo,pos:[px,2.2,pz+.14],speed:1.6+a}); } }
       top=3; break;
     case "orchard": {
       slab(t.wall); const palm=t.biome&&t.biome[0]===2;
-      for (let r=0;r<3;r++) for (let c=0;c<3;c++){ const px=(c+.5)*w/3, pz=(r+.5)*h/3; if (palm) gb.palm(px,pz,.9+hash2(r,c,9)*.3); else gb.tree(px,pz,.3,CANOPY[(r*3+c)%CANOPY.length],true); }
+      { const NC=Math.max(2,Math.round(w/1.35)), NR=Math.max(2,Math.round(h/1.35)); for (let r=0;r<NR;r++) for (let c=0;c<NC;c++){ const px=(c+.5)*w/NC, pz=(r+.5)*h/NR; if (palm) gb.palm(px,pz,.9+hash2(r,c,9)*.3); else gb.tree(px,pz,.3,CANOPY[(r*3+c)%CANOPY.length],true); } }
       top=1.3; break; }
     case "glass":
       slab("#b9a878"); for (let r=0;r<3;r++) for (let c=0;c<4;c++) gb.ico(x+.3+c*(ww-.5)/3,.12,z+.35+r*(dd-.6)/2,.12,"#5d8b4a",.8);
       gb.glassBox(x,0,z,ww,Hh,dd); for (let k=0;k<=4;k++) gb.box(x+k*ww/4-.015,0,F-.015,.03,Hh,.03,"#e8e8e0");
       gb.gable(x,Hh,z,ww,dd,RH*.6,"#dfece6","#dfece6",.03);
       top=Hh+RH*.6; break;
+    case "petrol": {
+      slab("#8f8a80"); gb.box(x,0,z,ww,Hh,dd*.4,t.wall); gb.box(x-.03,Hh,z-.03,ww+.06,.06,dd*.4+.06,t.roof); gb.win(x+.2,.1,z+dd*.4,ww-.4,Hh*.5,.03);
+      gb.box(x+.1,.95,z+dd*.5,ww-.2,.1,dd*.45,"#f2efe8"); gb.box(x+.1,.95,z+dd*.5,ww-.2,.1,.04,t.roof);
+      for (const fx of [.25,.75]){ gb.box(x+ww*fx-.04,0,z+dd*.72,.08,.95,.08,"#cfcac0"); gb.box(x+ww*fx-.12,0,z+dd*.64,.24,.38,.14,t.roof); }
+      top=1.1; signAt={y:Hh*.8,z:z+dd*.4}; break; }
+    case "parking": {
+      slab("#5f5b52",.04); const bays=Math.max(1,Math.floor((w-.3)/.42));
+      for (const row of [0,1]){ const z0=row?h-.95:.15; if (h<2.2&&row) continue;
+        for (let k=0;k<=bays;k++) gb.box(.15+k*(w-.3)/bays,.041,z0,.03,.005,.8,"#e8e2cc");
+        for (let k=0;k<bays;k++) if (hash2(k,row,w*31+h)<.6){ const cx=.15+(k+.5)*(w-.3)/bays, col=CAR_COL[(k*7+row*3)%CAR_COL.length]; gb.box(cx-.15,.04,z0+.12,.3,.14,.56,col); gb.box(cx-.13,.18,z0+.28,.26,.1,.26,"#2e3a44"); } }
+      gb.box(.2,.04,h/2-.05,w-.4,.005,.1,"#d9b13a");
+      top=.4; break; }
+    case "garage": {
+      const fl=Math.max(2,Math.round(Hh/.55));
+      for (let f=0;f<=fl;f++){ gb.box(x,f*.55,z,ww,.08,dd,f===fl?t.roof:t.wall); if (f<fl) for (let k=0;k<Math.floor(ww/.6);k++) if (hash2(f,k,9)<.5) gb.box(x+.15+k*.6,f*.55+.08,z+.3,.32,.14,.55,CAR_COL[(f+k)%CAR_COL.length]); }
+      for (const [a,b] of [[0,0],[1,0],[0,1],[1,1],[.5,0],[.5,1]]) gb.box(x+a*(ww-.1),0,z+b*(dd-.1),.1,fl*.55,.1,shade(t.wall,.85));
+      gb.box(x+ww-.35,0,z+dd*.3,.3,fl*.55+.3,.6,shade(t.wall,.9));
+      top=fl*.55+.3; signAt={y:fl*.55-.2,z:F}; break; }
+    case "airport": {
+      const big=w>=14, rz=1.0, rl=w-.4;
+      slab("#7f8a55");
+      gb.box(.2,.03,rz,rl,.02,1.4,"#4a4740"); for (let k=0;k<Math.floor(rl/1.2);k++) gb.box(.6+k*1.2,.051,rz+.67,.6,.005,.06,"#f2efe8");
+      for (let k=0;k<6;k++){ gb.box(.35,.051,rz+.15+k*.2,.4,.005,.08,"#f2efe8"); gb.box(rl-.55,.051,rz+.15+k*.2,.4,.005,.08,"#f2efe8"); }
+      gb.box(.6,.03,rz+1.4,rl-.8,.02,.5,"#5a564c"); gb.box(.6,.03,rz+1.9,rl-.8,.02,h-rz-4.2,"#8a857a");
+      const tz=h-2.3, tw=big?w*.55:w*.6; gb.box(w*.5-tw/2,0,tz,tw,1.1,1.8,t.wall); gb.win(w*.5-tw/2+.1,.15,tz-.01,tw-.2,.7,.02); makeRoof(gb,"barrel",w*.5-tw/2,1.1,tz,tw,1.8,.6,t.roof,t.wall);
+      for (let k=0;k<(big?4:2);k++){ const gx=w*.5-tw/2+.6+k*(tw-1.2)/Math.max(1,(big?3:1)); gb.box(gx-.1,.4,tz-.9,.2,.2,.9,"#cfcac0"); }
+      const cx=big?w-2.2:w-1.5, cz=h-1.6; gb.cyl(cx,0,cz,.28,2.6,"#e9e4da",8,.22); gb.box(cx-.4,2.6,cz-.4,.8,.45,.8,"#3f5a6a"); gb.box(cx-.45,3.05,cz-.45,.9,.08,.9,"#e9e4da"); gb.cyl(cx,3.13,cz,.03,.5,"#9a9a9a",4);
+      const plane=(px,pz,s,rot)=>{ const g=new GB(); g.cyl(0,0,0,.14*s,1.5*s,"#f4f2ee",8); g.cone(0,1.5*s,0,.14*s,.28*s,"#f4f2ee",8); g.box(-.75*s,.65*s,-.06*s,1.5*s,.04*s,.3*s,"#e2ddd2"); g.box(-.28*s,.05*s,-.04*s,.56*s,.03*s,.16*s,"#e2ddd2"); g.box(-.02*s,.05*s,-.04*s,.04*s,.36*s,.2*s,"#c0533f");
+        const m=g.finish().geo; m.rotateX(Math.PI/2); m.rotateY(rot); m.translate(px,.22*s,pz); gb.p.push(m); };
+      plane(w*.3,rz+.7,1,Math.PI/2); plane(w*.45,h-3.3,.8,0); if (big){ plane(w*.62,h-3.3,.8,0); plane(w*.78,rz+2.6,1,.3); }
+      gb.box(1,0,h-1.4,1.6,.9,1.1,"#cfc7b6"); makeRoof(gb,"barrel",1,.9,h-1.4,1.6,1.1,.5,"#8a8478","#cfc7b6");
+      top=3.6; signAt={y:.85,z:tz+1.8,x:w*.5}; break; }
+    case "port": {
+      slab("#a8a296"); gb.box(.04,0,.04,w-.08,.06,1.5,"#4f7f8f");
+      for (let r=0;r<3;r++) for (let c=0;c<Math.floor((w-3)/1.1);c++) for (let s=0;s<1+((r+c)%3);s++) gb.box(1.2+c*1.1,.06+s*.28,2.4+r*1.3,.9,.27,.5,["#c0533f","#4f7fa8","#d9a23a","#3f8f5a","#8a6a8a"][(r+c+s)%5]);
+      for (let k=0;k<2;k++){ const cx=2+k*(w-4); gb.box(cx-.6,0,1.3,.12,2.6,.12,"#d9a23a"); gb.box(cx+.5,0,1.3,.12,2.6,.12,"#d9a23a"); gb.box(cx-.6,0,2.5,.12,2.6,.12,"#d9a23a"); gb.box(cx+.5,0,2.5,.12,2.6,.12,"#d9a23a"); gb.box(cx-.7,2.6,.2,1.4,.18,2.5,"#d9a23a"); }
+      const sh=new GB(); sh.box(-2.2,0,-.45,4.4,.4,.9,"#3f4f63"); sh.box(1.2,.4,-.35,.8,.6,.7,"#efe8da"); for (let k=0;k<4;k++) sh.box(-1.9+k*.75,.4,-.3,.6,.25,.6,["#c0533f","#4f7fa8","#d9a23a","#3f8f5a"][k]);
+      const sg=sh.finish().geo; sg.translate(w/2,0,.75); gb.p.push(sg);
+      gb.box(w-3,0,h-1.6,2.6,1.1,1.3,"#b9b2a6"); makeRoof(gb,"barrel",w-3,1.1,h-1.6,2.6,1.3,.4,t.roof,"#b9b2a6");
+      top=2.8; break; }
+    case "refinery": {
+      slab("#9a958a");
+      for (let k=0;k<Math.floor((w-2)/1.3);k++) for (let j=0;j<2;j++){ gb.cyl(1+k*1.3,0,1+j*1.4,.5,.7,t.wall,12); gb.dome(1+k*1.3,.7,1+j*1.4,.5,shade(t.wall,.9)); }
+      for (let k=0;k<3;k++) gb.cyl(w-1.6+k*.45,0,h-1.4,.14,1.8+k*.4,"#cfcac0",8);
+      gb.box(.6,.25,h-.8,w-1.2,.08,.08,"#8a8478"); gb.box(.6,.45,h-.65,w-1.2,.08,.08,"#a59c84");
+      gb.cyl(w-.6,0,.6,.08,2.6,"#7a7a7a",6); gb.emit.push([w-.6,2.7,.6,"factory"]);
+      top=2.8; break; }
+    case "amusement": {
+      slab(t.wall);
+      const tr=new THREE.TorusGeometry(2,.06,4,28); tr.rotateX(Math.PI/2); tr.scale(1.2,1,.8); tr.translate(w*.35,1.4,h*.35); gb.add(tr,"#c0533f");
+      for (let k=0;k<10;k++){ const a=k/10*Math.PI*2; gb.box(w*.35+Math.cos(a)*2.4-.03,0,h*.35+Math.sin(a)*1.6-.03,.06,1.4+Math.sin(a*2)*.4,.06,"#efe6d6"); }
+      const loop=new THREE.TorusGeometry(.8,.06,4,20); loop.translate(w*.35+2.4,1.2,h*.35); gb.add(loop,"#c0533f");
+      gb.cyl(w*.7,0,h*.72,.8,.4,"#d9a23a",10); gb.cone(w*.7,.9,h*.72,.95,.5,"#c0533f",10); for (let k=0;k<6;k++) gb.box(w*.7+Math.cos(k)*.6,0,h*.72+Math.sin(k)*.6,.04,.9,.04,"#f2efe8");
+      for (let k=0;k<3;k++){ gb.cone(1+k*1.3,0,h-1,.5,.8,["#4f7fa8","#c0533f","#5d7f3a"][k],8); }
+      const cx=w*.72, cz=h*.28, cy=2.2; gb.box(cx-.9,0,cz-.05,.08,cy,.08,"#6b6b78",[0,0,-.38]); gb.box(cx+.82,0,cz-.05,.08,cy,.08,"#6b6b78",[0,0,.38]);
+      const wh=new GB(); const tor=new THREE.TorusGeometry(1.7,.05,4,24); wh.add(tor,"#8a8a96"); for (let k=0;k<10;k++){ const g=new THREE.BoxGeometry(.04,1.7,.04); g.translate(0,.85,0); g.rotateZ(k*Math.PI/5); wh.add(g,"#8a8a96"); const a=k*Math.PI/5; wh.box(Math.cos(a)*1.7-.12,Math.sin(a)*1.7-.22,-.1,.24,.2,.2,["#c0533f","#d9a23a","#4f7fa8","#5d7f3a"][k%4]); }
+      gb.spin.push({geo:wh.finish().geo,pos:[cx,cy,cz],speed:.25});
+      top=4.2; break; }
+    case "golf": {
+      slab(t.wall,.03);
+      const holes=Math.max(2,Math.floor(w*h/14));
+      for (let k=0;k<holes;k++){ const px=.8+hash2(k,1,w)*(w-1.6), pz=.8+hash2(k,2,h)*(h-1.6);
+        gb.cyl(px,.03,pz,.55,.02,t.roof,10); gb.cyl(px+.1,.05,pz,.02,.5,"#f2efe8",4); gb.box(px+.12,.42,pz-.005,.16,.1,.01,"#c0533f");
+        gb.cyl(px-.7,.02,pz+.4,.3,.02,"#e6d4a2",8); }
+      for (let k=0;k<Math.floor(w*h/6);k++){ const px=.3+hash2(k,5,w)*(w-.6), pz=.3+hash2(k,6,h)*(h-.6); gb.tree(px,pz,.28,CANOPY[k%CANOPY.length]); }
+      gb.box(w-1.8,0,h-1.4,1.4,.55,1,"#efe6d6"); gb.gable(w-1.8,.55,h-1.4,1.4,1,.4,"#5a4030","#efe6d6");
+      top=1.2; break; }
+    case "waterpark": {
+      slab(t.wall);
+      gb.box(.5,.02,.5,w*.5,.05,h*.45,t.roof); gb.box(w*.6,.02,h*.55,w*.32,.05,h*.35,"#7fc8e0");
+      for (let s=0;s<2;s++){ const col=s?"#c0533f":"#d9a23a", bx=w-1.2-s*1.2; gb.box(bx-.2,0,.5,.4,1.8,.4,"#efe6d6");
+        for (let k=0;k<6;k++) gb.box(bx-.15-k*.35,1.6-k*.28,.6+(k%2)*.25,.4,.08,.25,col,[0,0,.5]); }
+      for (let k=0;k<4;k++){ const ux=.8+k*1.1, uz=h-.8; gb.box(ux-.015,0,uz,.03,.5,.03,"#5a524c"); gb.cone(ux,.45,uz,.3,.15,["#c0533f","#e8b44a","#4f7fa8","#5d7f3a"][k],8); }
+      top=2; break; }
+    case "campus": {
+      slab("#7f9a55"); gb.box(w/2-.3,0,.1,.6,.06,h-.2,"#d8cdb0"); gb.box(.1,0,h/2-.3,w-.2,.06,.6,"#d8cdb0");
+      const bld=(bx,bz,bw,bd,bh)=>{ gb.box(bx,0,bz,bw,bh,bd,t.wall); gb.gable(bx,bh,bz,bw,bd,.6,t.roof,t.wall); gb.windows(bx,bz,bw,bd,0,bh,false); };
+      bld(.4,.4,w/2-1,h/2-1,1.3); bld(w/2+.6,.4,w/2-1,h/2-1,1.1); bld(.4,h/2+.6,w/2-1,h/2-1.2,1.0);
+      const cx=w*.75, cz=h*.75; gb.box(cx-.35,0,cz-.35,.7,2.4,.7,"#e9e3d6"); gb.cyl(cx,1.9,cz+.355,.2,.015,"#f8f4ea",10); { const g=new THREE.ConeGeometry(.55,.7,4); g.rotateY(Math.PI/4); g.translate(cx,2.75,cz); gb.add(g,t.roof); }
+      for (let k=0;k<6;k++) gb.tree(w*.55+hash2(k,1,7)*w*.4,h*.55+hash2(k,2,7)*h*.4,.3,CANOPY[k%CANOPY.length]);
+      top=3.2; signAt={y:.5,z:h-.12,x:w*.3}; break; }
+    case "lighthouse": {
+      slab("#b9b2a6"); gb.box(.2,0,.3,.9,.5,.8,"#efe6d6"); gb.gable(.2,.5,.3,.9,.8,.3,t.roof,"#efe6d6");
+      const cx=w*.62, cz=h*.5; for (let k=0;k<6;k++) gb.cyl(cx,k*.42,cz,.42-k*.035,.42,k%2?t.wall:t.roof,10,.42-(k+1)*.035);
+      gb.cyl(cx,2.52,cz,.25,.08,"#3b3b3b",10); gb.glassBox(cx-.18,2.6,cz-.18,.36,.32,.36); gb.dome(cx,2.92,cz,.22,t.roof);
+      top=3.2; break; }
+    case "launch": {
+      slab(t.wall,.04); gb.cyl(w/2,0,h/2,2,.12,"#a59c84",12);
+      gb.cyl(w/2,.12,h/2,.32,3.4,"#f2efe8",12); gb.cone(w/2,3.52,h/2,.32,.8,"#c0533f",12);
+      for (let k=0;k<4;k++){ const a=k*Math.PI/2; gb.box(w/2+Math.cos(a)*.3-.05,.12,h/2+Math.sin(a)*.3-.05,.1,.6,.1,"#3b3b3b"); }
+      gb.box(w/2+.6,0,h/2-.3,.6,4.2,.6,"#c0533f"); for (let y=.4;y<4.2;y+=.5) gb.box(w/2+.3,y,h/2-.05,.3,.05,.1,"#8a8a8a");
+      for (let k=0;k<2;k++){ gb.cyl(1.2+k*1.2,0,h-1.2,.45,1,"#e9e6df",10); gb.dome(1.2+k*1.2,1,h-1.2,.45,"#cfcac0"); }
+      gb.box(w-2.2,0,1,1.6,.7,1.1,"#cfc7b6");
+      top=4.5; break; }
     default:
       gb.box(x,0,z,ww,Hh,dd,t.wall||"#cccccc");
   }
+  top=applyTraits(gb,D,t,{x,z,ww,dd,Hh,F,w,h,top,roofY,rh:RH});
   // every building gets a name board; open sites (parks, farms, towers) get one on two posts at the front
   const text=t.sign||t.name.toUpperCase();
   if (!signAt){ signAt={y:.44,z:h-.12}; gb.box(w/2-Math.min(ww*.43,.9),0,h-.16,.05,.4,.05,"#6b4e36"); gb.box(w/2+Math.min(ww*.43,.9)-.05,0,h-.16,.05,.4,.05,"#6b4e36"); }
   const out=gb.finish(); out.top=top;
-  if (signAt){ const s=makeSign(t,key,ww,text); out.sign=s; out.signGeo=new THREE.PlaneGeometry(s.w,s.h); out.signPos=new THREE.Vector3(x+ww/2,signAt.y,signAt.z+.025); }
-  TYPEGEO[key]=out; return out;
+  if (signAt){ const s=makeSign(t,key,ww,text); out.sign=s; out.signGeo=new THREE.PlaneGeometry(s.w,s.h); out.signPos=new THREE.Vector3(signAt.x!=null?signAt.x:x+ww/2,signAt.y,signAt.z+.025); }
+  TYPEGEO[ck]=out; return out;
 }
 function makeSign(t,key,ww,text){
   const fs=72, c=document.createElement("canvas"); let g=c.getContext("2d"); g.font="800 "+fs+"px Nunito, system-ui, sans-serif";
@@ -933,7 +1242,7 @@ function makeSign(t,key,ww,text){
 /* ---------- building objects in the scene ---------- */
 const bObjs=new Map(), pickables=[];
 function makeBuildingObj(b,ghost){
-  const tg=typeGeo(b.type), grp=new THREE.Group(), body=new THREE.Group(); grp.add(body);
+  const tg=tgOf(b), grp=new THREE.Group(), body=new THREE.Group(); grp.add(body);
   const main=new THREE.Mesh(tg.geo,ghost?MAT.ghost:MAT.b); main.castShadow=!ghost; main.receiveShadow=true; main.userData.bid=b.id; body.add(main);
   if (tg.win) body.add(new THREE.Mesh(tg.win,ghost?MAT.ghostPlain:MAT.win));
   if (tg.glass) body.add(new THREE.Mesh(tg.glass,MAT.glass));
@@ -943,10 +1252,10 @@ function makeBuildingObj(b,ghost){
   placeGroup(grp,b);
   return {grp,body,main,sign,b};
 }
-function placeGroup(grp,b){ const [w,h]=TYPES[b.type].size, r=(b.rot|0)&3, o=ROT_OFF(w,h,r); grp.position.set(b.x+o[0],0,b.y+o[1]); grp.rotation.y=-r*Math.PI/2; }
+function placeGroup(grp,b){ const [w,h]=baseSize(b), r=(b.rot|0)&3, o=ROT_OFF(w,h,r); grp.position.set(b.x+o[0],0,b.y+o[1]); grp.rotation.y=-r*Math.PI/2; }
 /* construction site: dirt pad, timber scaffolding, a crane on bigger plots; the building rises as work progresses */
 function makeSite(b){
-  const t=TYPES[b.type], [w,h]=t.size, tg=typeGeo(b.type), top=Math.max(1,tg.top*1.05), g=new GB(), wood="#a8834f";
+  const t=TYPES[b.type], [w,h]=baseSize(b), tg=tgOf(b), top=Math.max(1,tg.top*1.05), g=new GB(), wood="#a8834f";
   g.box(.05,0,.05,w-.1,.03,h-.1,"#8a6a45");
   const xs=[.1,w/2-.04,w-.18], zs=[.1,h/2-.04,h-.18];
   for (const x of xs) for (const z of zs){ if (x!==xs[1]||z!==zs[1]) g.box(x,0,z,.07,top,.07,wood); }
@@ -963,7 +1272,7 @@ function makeSite(b){
 function syncBuildings(){
   const ids=new Set(S.buildings.map(b=>b.id));
   for (const [id,o] of bObjs) if (!ids.has(id)){ scene.remove(o.grp); bObjs.delete(id); }
-  for (const b of S.buildings){ let o=bObjs.get(b.id); if (o&&(o.b.type!==b.type||((o.b.rot|0)!==(b.rot|0)))){ scene.remove(o.grp); o=null; }
+  for (const b of S.buildings){ let o=bObjs.get(b.id); if (o&&(o.b.type!==b.type||((o.b.rot|0)!==(b.rot|0))||baseSize(o.b).join()!==baseSize(b).join())){ scene.remove(o.grp); o=null; }
     if (!o){ o=makeBuildingObj(b); scene.add(o.grp); bObjs.set(b.id,o); }
     o.b=b; placeGroup(o.grp,b); }
   pickables.length=0; for (const o of bObjs.values()) pickables.push(o.main);
@@ -1040,7 +1349,7 @@ function updatePuffs(dt){
     p.s.material.opacity=(p.dark?.7:.5)*Math.min(1,p.life*1.4)*Math.min(1,age*6); }
 }
 function emitters(dt){
-  for (const o of bObjs.values()){ const tg=typeGeo(o.b.type); if (!tg.emit.length||underConstruction(o.b)) continue; const bx=o.b.x, bz=o.b.y;
+  for (const o of bObjs.values()){ const tg=tgOf(o.b); if (!tg.emit.length||underConstruction(o.b)) continue; const bx=o.b.x, bz=o.b.y;
     if (Math.abs(bx-cam.tx)>40||Math.abs(bz-cam.tz)>40) continue;
     for (const e of tg.emit){ const fac=e[3]==="factory"; if (Math.random()<dt*(fac?1.6:.7)) { const [ex,ez]=localToTile(o.b,e[0],e[2]); puff(ex,e[1],ez,false,fac?.35:.2,.4,4); } } }
 }
@@ -1051,7 +1360,7 @@ function syncFires(burning,t,dt,night,now){
   for (const [id,g] of fireObjs) if (!burning.has(id)){ scene.remove(g); fireObjs.delete(id); }
   let best=null,bd=1e9;
   for (const [id,e] of burning){
-    let g=fireObjs.get(id); const tt=TYPES[e.b.type], tg=typeGeo(e.b.type);
+    let g=fireObjs.get(id); const tt=TYPES[e.b.type], tg=tgOf(e.b);
     if (!g){ g=new THREE.Group(); for (let k=0;k<5;k++){ const m=new THREE.Mesh(GEO.cone,k%2?MAT.flameB:MAT.flameA); m.position.set((k-2)*.16*tt.size[0]/2,0,((k*7)%3-1)*.15); g.add(m); }
       { const f=fp(e.b); g.position.set(e.b.x+f[0]/2,tg.top*.82,e.b.y+f[1]/2); } scene.add(g); fireObjs.set(id,g); }
     const spraying=e.unit&&now>=e.unit.arrive;
@@ -1065,7 +1374,7 @@ const sprayPts=[0,1,2].map(()=>{ const g=new THREE.BufferGeometry(); g.setAttrib
 function updateSpray(fires,now,t){
   let k=0;
   for (const e of fires){ if (!e.unit||now<e.unit.arrive||now>=e.unit.workEnd||k>=3) continue; const st=unitPos(e.unit,now); if (!st) continue;
-    const tt=TYPES[e.b.type], tg=typeGeo(e.b.type), ax=st.tx, az=st.ty, ay=.45, bx=e.b.x+fp(e.b)[0]/2, bz=e.b.y+fp(e.b)[1]/2, by=tg.top*.85, arr=sprayPts[k].geometry.attributes.position.array;
+    const tt=TYPES[e.b.type], tg=tgOf(e.b), ax=st.tx, az=st.ty, ay=.45, bx=e.b.x+fp(e.b)[0]/2, bz=e.b.y+fp(e.b)[1]/2, by=tg.top*.85, arr=sprayPts[k].geometry.attributes.position.array;
     for (let i=0;i<40;i++){ const u=((i/40)+t*.9)%1; arr[i*3]=ax+(bx-ax)*u; arr[i*3+1]=ay+(by-ay)*u+Math.sin(u*Math.PI)*1.2; arr[i*3+2]=az+(bz-az)*u; }
     sprayPts[k].geometry.attributes.position.needsUpdate=true; sprayPts[k].visible=true; k++; }
   for (;k<3;k++) sprayPts[k].visible=false;
@@ -1090,10 +1399,10 @@ const footprint=new THREE.Mesh(new THREE.PlaneGeometry(1,1).rotateX(-Math.PI/2),
 const paintMesh=inst(new THREE.PlaneGeometry(1,1).rotateX(-Math.PI/2),3000,false,new THREE.MeshBasicMaterial({color:0xe8b44a,transparent:true,opacity:.6,depthWrite:false}));
 function updateGhost(){
   if (S.place&&S.ghost){
-    if (ghostKey!==S.place){ if (ghostObj) scene.remove(ghostObj.grp); ghostObj=makeBuildingObj({id:"ghost",type:S.place,x:0,y:0},true); scene.add(ghostObj.grp); ghostKey=S.place; }
-    const gb={type:S.place,x:S.ghost.x,y:S.ghost.y,rot:S.rot}, f=fp(gb); placeGroup(ghostObj.grp,gb); ghostObj.grp.visible=true;
+    const gk=S.place+":"+S.sw+"x"+S.sh; if (ghostKey!==gk){ if (ghostObj) scene.remove(ghostObj.grp); ghostObj=makeBuildingObj({id:"ghost",type:S.place,x:0,y:0,sw:S.sw,sh:S.sh},true); scene.add(ghostObj.grp); ghostKey=gk; }
+    const gb={type:S.place,x:S.ghost.x,y:S.ghost.y,rot:S.rot,sw:S.sw,sh:S.sh}, f=fp(gb); placeGroup(ghostObj.grp,gb); ghostObj.grp.visible=true;
     footprint.visible=true; footprint.scale.set(f[0],1,f[1]); footprint.position.set(S.ghost.x+f[0]/2,.08,S.ghost.y+f[1]/2);
-    footprint.material.color.set(canPlace(S.place,S.ghost.x,S.ghost.y,S.rot).ok?0x5d8b57:0xd4685a);
+    footprint.material.color.set(canPlace(S.place,S.ghost.x,S.ghost.y,S.rot,S.sw,S.sh).ok?0x5d8b57:0xd4685a);
   } else { if (ghostObj) ghostObj.grp.visible=false; footprint.visible=false; }
   let n=0; if (S.build&&S.mode==="pave") for (const i of S.roadTiles){ if (n>=3000) break; setI(paintMesh,n++,i%W+.5,.09,((i/W)|0)+.5,1,1,1,0,null); }
   finishInst(paintMesh,n);
@@ -1172,7 +1481,7 @@ function renderWorld(now,dt){
     const x=st.x/T, z=st.y/T; if (Math.abs(x-cam.tx)>50||Math.abs(z-cam.tz)>50) continue;
     list.push({key:n.id,x,z,color:n.color,walking:st.walking,hat:n.hat,hair:n.hair,legs:n.legs,ph:hashStr(n.id)%7}); }
   for (const o of bObjs.values()){ if (!o.site) continue; const [w,h]=fp(o.b); if (Math.abs(o.b.x-cam.tx)>40||Math.abs(o.b.y-cam.tz)>40) continue;
-    for (let k=0;k<2;k++){ const [bw,bh]=TYPES[o.b.type].size, u=(Math.sin(t*.35+k*2+o.b.x)+1)/2, [x,z]=localToTile(o.b,k?bw*u:-.3,k?bh+.3:bh*u); list.push({key:o.b.id+"w"+k,x,z,color:"#d9772a",walking:true,hat:true,hair:"#3a2a1e",legs:"#3a3f4a",ph:k*3}); } }
+    for (let k=0;k<2;k++){ const [bw,bh]=baseSize(o.b), u=(Math.sin(t*.35+k*2+o.b.x)+1)/2, [x,z]=localToTile(o.b,k?bw*u:-.3,k?bh+.3:bh*u); list.push({key:o.b.id+"w"+k,x,z,color:"#d9772a",walking:true,hat:true,hair:"#3a2a1e",legs:"#3a3f4a",ph:k*3}); } }
   drawPeople(list,t);
   const vl=[];
   for (const c of traffic){ const st=carPos(c); vl.push({kind:c.bus?"bus":"car",col:c.col,x:st.tx,z:st.ty,d:st.d,tilt:c.state==="crashed"?c.tilt:0,yaw:c.state==="crashed"?c.yaw:0}); }
@@ -1225,29 +1534,31 @@ function everyone(now){
 /* ============================================================
    PLACEMENT + SAVING
    ============================================================ */
-function canPlace(type,x,y,rot){
-  const t=TYPES[type],[w,h]=fp({type,rot:rot||0});
+function canPlace(type,x,y,rot,sw,sh){
+  const t=TYPES[type],[w,h]=fp({type,rot:rot||0,sw,sh}), price=priceFor(type,sw,sh);
+  if (t.lvl>cityLevel(cityXP())) return {ok:false,why:"Unlocks at city level "+t.lvl};
   if (x<1||y<1||x+w>W-1||y+h>H-1) return {ok:false,why:"Too close to the edge of the map"};
   for (let yy=y;yy<y+h;yy++) for (let xx=x;xx<x+w;xx++){ const i=yy*W+xx; if (water[i]) return {ok:false,why:"Can't build on water"}; if (occ[i]>=0) return {ok:false,why:"Something is already built here"}; if (road[i]) return {ok:false,why:"A road runs through here"}; }
   if (t.biome){ const bi=biome[(y+(h>>1))*W+x+(w>>1)]; if (!t.biome.includes(bi)) return {ok:false,why:"Only on "+t.biome.map(b=>BIOMES[b].toLowerCase()).join(" or ")}; }
-  if ((S.me?.credits||0)<t.price) return {ok:false,why:"You need "+fmt(t.price-(S.me?.credits||0))+" more coins"};
+  const have=treasury(); if (have<price) return {ok:false,why:"The treasury needs "+fmt(price-have)+" more coins"};
   return {ok:true};
 }
-async function placeBuilding(type,x,y,rot){
-  rot=(rot|0)&3; const chk=canPlace(type,x,y,rot); if (!chk.ok){ toast(chk.why); return; }
-  const t=TYPES[type], now=Date.now(), rec={type,x,y,rot,by:S.uid||"solo",at:now,done:now+buildMs(type)};
-  S.me.credits-=t.price; markDirty(true);
-  if (S.db){ try { await S.db.collection("buildings").add(rec); } catch(e){ S.me.credits+=t.price; markDirty(true); toast(e&&e.code==="quota_exceeded"?"The town is full: no room left for more buildings.":"Couldn't save that building. Try again."); return; } }
+async function placeBuilding(type,x,y,rot,sw,sh){
+  rot=(rot|0)&3; const chk=canPlace(type,x,y,rot,sw,sh); if (!chk.ok){ toast(chk.why); return; }
+  const t=TYPES[type], now=Date.now(), price=priceFor(type,sw,sh), ms=buildMs(type,t.resize?sw:0,t.resize?sh:0), rec={type,x,y,rot,by:S.uid||"solo",at:now,done:now+ms};
+  if (t.resize&&sw&&sh){ rec.sw=sw; rec.sh=sh; }
+  S.me.spent=(S.me.spent||0)+price; markDirty(true);
+  if (S.db){ try { await S.db.collection("buildings").add(rec); } catch(e){ S.me.spent-=price; markDirty(true); toast(e&&e.code==="quota_exceeded"?"The town is full: no room left for more buildings.":"Couldn't save that building. Try again."); return; } }
   else { soloState.buildings.push(Object.assign({id:"l"+Date.now()},rec)); saveSolo(); setBuildings(soloState.buildings); }
-  toast("Construction started: "+t.name+" · ready in "+Math.round(buildMs(type)/60000)+" min","−"+fmt(t.price));
+  toast("Construction started: "+t.name+" · ready in "+Math.max(1,Math.round(ms/60000))+" min","−"+fmt(price));
   if (!S.me.home){ S.me.home={x:x+1,y:y+1}; markDirty(true); }
   S.ghost=null; S.ghostLocked=false; S.place=null; cvs.classList.remove("placing"); renderDrawer();
 }
 async function commitRoads(){
   const tiles=[...S.roadTiles], cost=tiles.length*ROAD_PRICE; if (!tiles.length) return;
-  if (S.me.credits<cost){ toast("Not enough coins for "+tiles.length+" road tiles"); return; }
+  if (treasury()<cost){ toast("The treasury can't afford "+tiles.length+" road tiles"); return; }
   const by={}; for (const i of tiles){ const x=i%W,y=Math.floor(i/W),k="r_"+Math.floor(x/CH)+"_"+Math.floor(y/CH); (by[k]||=[]).push((y%CH)*CH+(x%CH)); }
-  S.me.credits-=cost; markDirty(true);
+  S.me.spent=(S.me.spent||0)+cost; markDirty(true);
   for (const k in by){ const merged=Array.from(new Set([...(S.dbRoads[k]||[]),...by[k]])).sort((a,b)=>a-b); S.dbRoads[k]=merged;
     if (S.db){ try { await S.db.doc("roads/"+k).set({t:merged}); } catch(e){ toast("Some roads didn't save. Try again."); } } }
   if (!S.db){ soloState.roads=S.dbRoads; saveSolo(); }
@@ -1257,7 +1568,7 @@ let dirty=false;
 function markDirty(now){ dirty=true; if (now) flush(); }
 function flush(){
   if (!dirty||!S.me) return; dirty=false;
-  const snap={name:S.me.name,color:S.me.color,credits:Math.floor(S.me.credits),earned:Math.floor(S.me.earned||0),tasks:S.me.tasks||0,home:S.me.home||null,created:S.me.created||Date.now(),lastSeen:Date.now()};
+  const snap={name:S.me.name,color:S.me.color,earned:Math.floor(S.me.earned||0),spent:Math.round(S.me.spent||0),banked:Math.floor(S.me.banked||0),tasks:S.me.tasks||0,home:S.me.home||null,created:S.me.created||Date.now(),lastSeen:Date.now()};
   if (S.db&&S.uid&&S.uid!=="solo") S.saveChain=S.saveChain.then(()=>S.db.doc("players/"+S.uid).set(snap)).catch(()=>{ dirty=true; });
   else { soloState.me=snap; saveSolo(); }
 }
@@ -1277,7 +1588,7 @@ function buildingNear(wx,wy){
   return best;
 }
 function startTask(b){ if (underConstruction(b)){ toast("The "+TYPES[b.type].name+" is still being built."); return; } if (!S.control) setControl(true); userInput(); if (S.task) return; if (burningMap(Date.now()).has(b.id)){ toast("The "+TYPES[b.type].name+" is on fire. Wait for the fire brigade."); return; } const t=TYPES[b.type], bon=bonusFor(b); S.task={b,start:performance.now(),secs:t.secs,reward:Math.round(t.reward*(1+bon.pct/100))}; S.target=null; showBuilding(b.id); }
-function finishTask(){ const tk=S.task; S.task=null; S.me.credits+=tk.reward; S.me.earned=(S.me.earned||0)+tk.reward; S.me.tasks=(S.me.tasks||0)+1; markDirty(true); toast(TYPES[tk.b.type].act+" done","+"+tk.reward); if (S.sheet&&S.sheet.kind==="building") showBuilding(tk.b.id); }
+function finishTask(){ const tk=S.task; S.task=null; S.me.earned=(S.me.earned||0)+tk.reward; S.me.tasks=(S.me.tasks||0)+1; markDirty(true); toast(TYPES[tk.b.type].act+" done","+"+tk.reward); if (S.sheet&&S.sheet.kind==="building") showBuilding(tk.b.id); }
 
 /* ============================================================
    UI
@@ -1312,7 +1623,8 @@ function showBuilding(id){
       return; }
     const rows=el("div",{class:"rows"});
     rows.append(el("div",null,el("span",null,"Activity"),el("span",null,t.act+" · "+t.secs+" sec")));
-    rows.append(el("div",null,el("span",null,"Pays"),el("span",null,"+"+reward+" coins"+(bon.pct?" (incl. +"+bon.pct+"%)":""))));
+    rows.append(el("div",null,el("span",null,"Pays the city"),el("span",null,"+"+reward+" per activity"+(bon.pct?" (incl. +"+bon.pct+"%)":""))));
+    { const inc=incomeOf(b); rows.append(el("div",null,el("span",null,inc>=0?(t.residents?"Taxes":"Business income"):"Upkeep"),el("span",{style:"color:"+(inc>=0?"var(--green)":"var(--coral)")},fmtRate(inc)+" / min"))); }
     rows.append(el("div",null,el("span",null,"Bonus"),el("span",null,(bon.roadOk?"Road access":"No road")+" · "+bon.leisure+(bon.leisure===1?" place":" places")+" to relax nearby")));
     if (t.residents){ const living=npcs.filter(n=>n.home===b).length; rows.append(el("div",null,el("span",null,"Living here"),el("span",null,living+" of "+t.residents))); }
     const here=everyone(Date.now()).filter(p=>p.act&&p.act.endsWith(" at "+t.name)&&buildingNear(p.x,p.y)===b).map(p=>p.rec.name);
@@ -1336,7 +1648,7 @@ function showPerson(id){
   openSheet("person",id,body=>{
     body.append(el("div",{class:"sheet-head"}, el("span",{class:"avatar",style:"background:"+safeColor(rec.color)}), el("div",null, el("h2",null,rec.name), el("div",{class:"sub"}, on?(p&&p.act?p.act:"Out and about"):(p&&p.act?p.act:"Walking somewhere"))), closeBtn()));
     body.append(el("div",{class:"tiles"},
-      el("div",{class:"tile"},el("span",{class:"k"},"Coins"),el("span",{class:"v num"},fmt(id===S.uid&&S.me?S.me.credits:rec.credits)),el("span",{class:"s"+(on?" g":"")},on?"+1 / sec":"resting")),
+      el("div",{class:"tile"},el("span",{class:"k"},"Given"),el("span",{class:"v num"},fmt(rec.earned||0)),el("span",{class:"s"+(on?" g":"")},on?"+1 / sec to city":"to the city")),
       el("div",{class:"tile"},el("span",{class:"k"},"Built"),el("span",{class:"v num"},built),el("span",{class:"s"},built===1?"building":"buildings")),
       el("div",{class:"tile"},el("span",{class:"k"},"Done"),el("span",{class:"v num"},fmt(rec.tasks||0)),el("span",{class:"s"},"activities"))));
     body.append(el("div",{class:"rows"},
@@ -1351,14 +1663,14 @@ async function demolish(b){
   const t=TYPES[b.type];
   if (S.db){ try { await S.db.doc("buildings/"+b.id).delete(); } catch(e){ toast("Couldn't demolish. Try again."); return; } }
   else { soloState.buildings=soloState.buildings.filter(x=>x.id!==b.id); saveSolo(); setBuildings(soloState.buildings); }
-  S.me.credits+=Math.floor(t.price/2); markDirty(true); toast(t.name+" taken down","+"+fmt(Math.floor(t.price/2))); closeSheet();
+  const refund=Math.floor(priceOf(b)/2), acc=Math.floor(accrued(b,Date.now())); S.me.banked=(S.me.banked||0)+refund+acc; markDirty(true); toast(t.name+" taken down. Half the cost goes back to the city.","+"+fmt(refund)); closeSheet();
 }
 function showPeople(){
   openSheet("people",null,body=>{
     body.append(el("div",{class:"sheet-head"},el("div",null,el("h2",null,"Residents"),el("div",{class:"sub"},Object.keys(S.players).length+" players · "+npcs.length+" townsfolk")),closeBtn()));
     const rows=el("div",{class:"rows"}); const now=Date.now();
     for (const id of Object.keys(S.players)){ const r=S.players[id]; if (!r||!r.name) continue; const on=id===S.uid?S.playing:(S.online[id]&&now-S.online[id].seen<15000); const p=everyone(now).find(q=>q.id===id);
-      const btn=el("button",{class:"soft",style:"display:flex;align-items:center;gap:10px;width:100%;text-align:left",onclick:()=>showPerson(id)}, el("span",{class:"avatar",style:"width:30px;height:30px;background:"+safeColor(r.color)}), el("span",{style:"flex:1;min-width:0"}, el("div",null,r.name), el("div",{class:"note"}, on?"Playing now":(p&&p.act?p.act:"Walking"))), el("span",{class:"num"},fmt(r.credits||0)));
+      const btn=el("button",{class:"soft",style:"display:flex;align-items:center;gap:10px;width:100%;text-align:left",onclick:()=>showPerson(id)}, el("span",{class:"avatar",style:"width:30px;height:30px;background:"+safeColor(r.color)}), el("span",{style:"flex:1;min-width:0"}, el("div",null,r.name), el("div",{class:"note"}, on?"Playing now":(p&&p.act?p.act:"Walking"))), el("span",{class:"num"},fmt(r.earned||0)));
       rows.append(btn); }
     if (!rows.children.length) rows.append(el("p",{class:"note"},"Nobody has moved in yet."));
     body.append(el("div",{style:"display:grid;gap:8px"},...rows.children));
@@ -1368,7 +1680,15 @@ function showStats(){
   const counts={}; let pop=0; for (const b of S.buildings){ counts[b.type]=(counts[b.type]||0)+1; pop+=TYPES[b.type].residents||0; }
   const roadsN=road.reduce((a,v)=>a+v,0), free=W*H-water.reduce((a,v)=>a+v,0)-roadsN;
   openSheet("stats",null,body=>{
-    body.append(el("div",{class:"sheet-head"},el("div",null,el("h2",null,"Town"),el("div",{class:"sub"},"Day "+gameTime(Date.now()).day)),closeBtn()));
+    const now=Date.now(), xp=cityXP(now), lv=cityLevel(xp), lo=LEVELS[lv-1]||0, hi=LEVELS[lv], rate=cityRate(now);
+    let inc=0, upk=0; for (const b of S.buildings){ if (underConstruction(b,now)) continue; const r=incomeOf(b); if (r>=0) inc+=r; else upk-=r; }
+    body.append(el("div",{class:"sheet-head"},el("div",null,el("h2",null,"City · level "+lv),el("div",{class:"sub"},"Day "+gameTime(now).day+" · "+(hi?fmt(hi-xp)+" XP to level "+(lv+1):"Top level reached"))),closeBtn()));
+    body.append(el("div",{class:"bar"},el("i",{style:"width:"+(hi?Math.min(100,(xp-lo)/(hi-lo)*100):100).toFixed(0)+"%"})));
+    body.append(el("div",{class:"tiles"},
+      el("div",{class:"tile"},el("span",{class:"k"},"Treasury"),el("span",{class:"v num"},fmt(treasury(now))),el("span",{class:"s"+(rate>=0?" g":"")},(rate>=0?"+":"−")+fmt(Math.abs(rate))+" / min")),
+      el("div",{class:"tile"},el("span",{class:"k"},"Income"),el("span",{class:"v num"},"+"+fmt(inc)),el("span",{class:"s"},"per minute")),
+      el("div",{class:"tile"},el("span",{class:"k"},"Upkeep"),el("span",{class:"v num"},"−"+fmt(upk)),el("span",{class:"s"},"per minute"))));
+    if (hi){ const next=Object.values(TYPES).filter(t=>t.lvl===lv+1&&!t.starter).map(t=>t.name); if (next.length) body.append(el("p",{class:"note",style:"margin:0"},"Level "+(lv+1)+" unlocks: "+next.join(", ")+".")); }
     body.append(el("div",{class:"tiles"},
       el("div",{class:"tile"},el("span",{class:"k"},"Buildings"),el("span",{class:"v num"},S.buildings.length)),
       el("div",{class:"tile"},el("span",{class:"k"},"Townsfolk"),el("span",{class:"v num"},pop)),
@@ -1409,32 +1729,43 @@ function renderDrawer(){
       el("div",{style:"flex:1;min-width:150px"}, el("b",{style:"font-family:var(--display);font-size:20px"},n+" tiles"), el("div",{class:"note"},fmt(n*ROAD_PRICE)+" coins · "+ROAD_PRICE+" per tile")),
       el("button",{class:"soft",onclick:()=>{ S.roadTiles=new Set(); renderDrawer(); }, disabled:!n},"Clear"),
       el("button",{class:"dark",onclick:commitRoads, disabled:!n},"Pave")));
+    for (const key of ["parking","parkgarage"]){ const t=TYPES[key], locked=t.lvl>cityLevel(cityXP());
+      cards.append(el("button",{class:"card",disabled:locked||treasury()<t.price,onclick:()=>selectPlace(key)}, el("img",{src:previewURL(key),alt:"",width:"116",height:"66",style:"width:116px;height:66px;object-fit:contain"}), el("b",null,t.name), el("span",{class:"p"},fmt(t.price)+(t.resize?" · resizable":"")), locked?el("span",{class:"lock"},"Unlocks at level "+t.lvl):null)); }
     updateChrome(); return;
   }
   if (S.mode==="bulldoze"){ cats.append(el("button",{"aria-pressed":"true"},"Remove")); cards.append(el("p",{class:"note",style:"padding:8px 4px;margin:0"},"Tap one of your buildings on the map. You get half of its price back.")); updateChrome(); return; }
   for (const c of CATS) cats.append(el("button",{"aria-pressed":String(c===S.cat),onclick:()=>{ S.cat=c; renderDrawer(); }},c));
   for (const key in TYPES){ const t=TYPES[key]; if (t.cat!==S.cat||t.starter) continue;
     const pv=el("img",{src:previewURL(key),alt:"",width:"116",height:"66",style:"width:116px;height:66px;object-fit:contain"});
-    const afford=(S.me?.credits||0)>=t.price;
-    cards.append(el("button",{class:"card","aria-pressed":String(S.place===key),disabled:!afford,title:t.act+" · "+t.secs+"s · +"+t.reward,onclick:()=>{ S.place=key; S.ghost=null; S.ghostLocked=false; cvs.classList.add("placing"); renderDrawer(); }},
-      pv, el("b",null,t.name), el("span",{class:"p"},fmt(t.price)+" coins · "+Math.round(buildMs(key)/60000)+" min"), t.biome?el("span",{class:"lock"},t.biome.map(b=>BIOMES[b]).join(" / ")):null));
+    const lvl=cityLevel(cityXP()), locked=t.lvl>lvl, afford=treasury()>=t.price, inc=t.income;
+    cards.append(el("button",{class:"card","aria-pressed":String(S.place===key),disabled:locked||!afford,title:t.act+" · "+t.secs+"s · +"+t.reward,onclick:()=>{ selectPlace(key); }},
+      pv, el("b",null,t.name), el("span",{class:"p"},fmt(t.price)+" · "+Math.max(1,Math.round(buildMs(key)/60000))+" min"),
+      locked?el("span",{class:"lock"},"Unlocks at level "+t.lvl):el("span",{class:"lock",style:"color:"+(inc>=0?"var(--green)":"var(--muted)")},fmtRate(inc)+"/min"+(t.resize?" · resizable":"")),
+      t.biome&&!locked?el("span",{class:"lock"},t.biome.map(b=>BIOMES[b]).join(" / ")):null));
   }
   updateChrome();
 }
+function selectPlace(key){ const t=TYPES[key]; S.place=key; S.ghost=null; S.ghostLocked=false; S.sw=t.size[0]; S.sh=t.size[1]; S.mode="walk"; S.cat=t.cat; cvs.classList.add("placing"); renderDrawer(); }
+function resizePlace(dw,dh){ const t=TYPES[S.place]; if (!t||!t.resize) return; const mx=t.cat==="Fun"&&!/golf/.test(S.place)?12:16;
+  S.sw=Math.max(t.size[0],Math.min(mx,S.sw+dw)); S.sh=Math.max(t.size[1],Math.min(mx,S.sh+dh)); renderPlace(); }
 function renderPlace(){
   const pb=$("placebar"); pb.textContent="";
   if (!S.build||!S.place){ pb.hidden=true; return; }
-  const t=TYPES[S.place], chk=S.ghost?canPlace(S.place,S.ghost.x,S.ghost.y,S.rot):null;
-  pb.append(el("div",{class:"info"}, el("b",null,t.name+" · "+fmt(t.price)+" coins"),
-      el("span",{class:"why"+(chk?(chk.ok?" ok":" bad"):"")}, chk?(chk.ok?"Good spot. Takes "+Math.round(buildMs(S.place)/60000)+" min to build.":chk.why):"Click or tap the map to choose a spot.")),
+  const t=TYPES[S.place], sw=t.resize?S.sw:0, sh=t.resize?S.sh:0, price=priceFor(S.place,sw,sh), mins=Math.max(1,Math.round(buildMs(S.place,sw,sh)/60000)), chk=S.ghost?canPlace(S.place,S.ghost.x,S.ghost.y,S.rot,sw,sh):null;
+  pb.append(el("div",{class:"info"}, el("b",null,t.name+(t.resize?" "+S.sw+"×"+S.sh:"")+" · "+fmt(price)+" coins"),
+      el("span",{class:"why"+(chk?(chk.ok?" ok":" bad"):"")}, chk?(chk.ok?"Good spot. Takes "+mins+" min to build.":chk.why):"Click or tap the map to choose a spot.")));
+  if (t.resize) pb.append(el("div",{class:"btnrow",style:"flex:0 0 auto;gap:4px"},
+      el("button",{class:"soft",onclick:()=>resizePlace(-1,0),title:"Narrower"},"W−"),el("button",{class:"soft",onclick:()=>resizePlace(1,0),title:"Wider"},"W+"),
+      el("button",{class:"soft",onclick:()=>resizePlace(0,-1),title:"Shallower"},"D−"),el("button",{class:"soft",onclick:()=>resizePlace(0,1),title:"Deeper"},"D+")));
+  pb.append(
     el("button",{class:"soft",onclick:rotatePlace,title:"Rotate (T)"},"Rotate"),
     el("button",{class:"soft",onclick:()=>{ S.place=null; S.ghost=null; S.ghostLocked=false; cvs.classList.remove("placing"); renderDrawer(); }},"Cancel"),
-    el("button",{class:"dark",disabled:!(chk&&chk.ok),onclick:()=>{ if (S.ghost) placeBuilding(S.place,S.ghost.x,S.ghost.y,S.rot); }},"Build it"));
+    el("button",{class:"dark",disabled:!(chk&&chk.ok),onclick:()=>{ if (S.ghost) placeBuilding(S.place,S.ghost.x,S.ghost.y,S.rot,sw,sh); }},"Build it"));
   pb.hidden=false;
 }
 function rotatePlace(){
-  if (!S.place) return; const before=S.ghost?fp({type:S.place,rot:S.rot}):null; S.rot=(S.rot+1)&3;
-  if (S.ghost&&before){ const after=fp({type:S.place,rot:S.rot}); S.ghost={x:S.ghost.x+Math.floor(before[0]/2)-Math.floor(after[0]/2), y:S.ghost.y+Math.floor(before[1]/2)-Math.floor(after[1]/2)}; }
+  if (!S.place) return; const before=S.ghost?fp({type:S.place,rot:S.rot,sw:S.sw,sh:S.sh}):null; S.rot=(S.rot+1)&3;
+  if (S.ghost&&before){ const after=fp({type:S.place,rot:S.rot,sw:S.sw,sh:S.sh}); S.ghost={x:S.ghost.x+Math.floor(before[0]/2)-Math.floor(after[0]/2), y:S.ghost.y+Math.floor(before[1]/2)-Math.floor(after[1]/2)}; }
   renderPlace();
 }
 function toggleBuild(on){
@@ -1444,7 +1775,7 @@ function toggleBuild(on){
 }
 $("buildBtn").onclick=()=>toggleBuild(!S.build);
 $("homeBtn").onclick=()=>{ followId=null; if (S.playing){ cam.tx=S.pos.x/T; cam.tz=S.pos.y/T; S.follow=S.control; } else { cam.tx=TOWN.x+.5; cam.tz=TOWN.y+.5; } };
-$("peopleBtn").onclick=showPeople; $("statsBtn").onclick=showStats; $("mapBtn").onclick=showMap;
+$("peopleBtn").onclick=showPeople; $("statsBtn").onclick=showStats; $("lvlBtn").onclick=showStats; $("mapBtn").onclick=showMap;
 
 
 /* ============================================================
@@ -1466,7 +1797,7 @@ addEventListener("keydown",e=>{
 addEventListener("keyup",e=>{ S.keys[e.key.toLowerCase()]=false; });
 cvs.addEventListener("contextmenu",e=>e.preventDefault());
 cvs.addEventListener("wheel",e=>{ e.preventDefault(); cam.dist=Math.max(6,Math.min(230,cam.dist*Math.exp(e.deltaY*.0012))); },{passive:false});
-function ghostFrom(g){ const f=fp({type:S.place,rot:S.rot}); return {x:Math.floor(g.x)-Math.floor(f[0]/2), y:Math.floor(g.z)-Math.floor(f[1]/2)}; }
+function ghostFrom(g){ const f=fp({type:S.place,rot:S.rot,sw:S.sw,sh:S.sh}); return {x:Math.floor(g.x)-Math.floor(f[0]/2), y:Math.floor(g.z)-Math.floor(f[1]/2)}; }
 function twoPointer(){ const [a,b]=[...pointers.values()]; return {d:Math.hypot(a.x-b.x,a.y-b.y), ang:Math.atan2(b.y-a.y,b.x-a.x)}; }
 cvs.addEventListener("pointerdown",e=>{
   cvs.setPointerCapture(e.pointerId); pointers.set(e.pointerId,{x:e.clientX,y:e.clientY});
@@ -1493,7 +1824,7 @@ function endPointer(e){
   if (!pointers.size){ if (drag&&drag.painting) renderDrawer(); drag=null; }
 }
 cvs.addEventListener("pointerup",endPointer); cvs.addEventListener("pointercancel",endPointer);
-function paintAt(sx,sy){ const g=groundAt(sx,sy); if (!g) return; const x=Math.floor(g.x), y=Math.floor(g.z); if (!inMap(x,y)) return; const i=y*W+x; if (water[i]||occ[i]>=0||road[i]||S.roadTiles.has(i)) return; if ((S.roadTiles.size+1)*ROAD_PRICE>S.me.credits) return; S.roadTiles.add(i); }
+function paintAt(sx,sy){ const g=groundAt(sx,sy); if (!g) return; const x=Math.floor(g.x), y=Math.floor(g.z); if (!inMap(x,y)) return; const i=y*W+x; if (water[i]||occ[i]>=0||road[i]||S.roadTiles.has(i)) return; if ((S.roadTiles.size+1)*ROAD_PRICE>treasury()) return; S.roadTiles.add(i); }
 function clickAt(sx,sy,ptype){
   if (S.build&&S.mode==="pave") return;
   const g=groundAt(sx,sy);
@@ -1509,7 +1840,7 @@ function clickAt(sx,sy,ptype){
 /* ============================================================
    LOOP
    ============================================================ */
-let last=performance.now(), creditAcc=0, presAcc=0, uiAcc=0, lastPres="", lastNear=null;
+let lastLevel=0, last=performance.now(), creditAcc=0, presAcc=0, uiAcc=0, lastPres="", lastNear=null;
 /* Your character lives on their own like the townsfolk, and the camera stays free.
    "Take control" (or C) lets you steer them; the camera then follows them. Roaming earns the
    per-second coins; activity rewards are paid only for activities you start yourself. */
@@ -1548,8 +1879,7 @@ function tick(nowP){
     if (S.control&&S.follow&&!followId){ cam.tx+=(S.pos.x/T-cam.tx)*Math.min(1,dt*5); cam.tz+=(S.pos.y/T-cam.tz)*Math.min(1,dt*5); }
     if (S.task&&performance.now()-S.task.start>=S.task.secs*1000) finishTask();
     roam();
-    if (document.visibilityState==="visible"){ creditAcc+=dt; if (creditAcc>=1){ const n=Math.floor(creditAcc); creditAcc-=n; S.me.credits+=n; S.me.earned=(S.me.earned||0)+n; dirty=true; } }
-    $("credits").textContent=fmt(S.me.credits);
+    if (document.visibilityState==="visible"){ creditAcc+=dt; if (creditAcc>=1){ const n=Math.floor(creditAcc); creditAcc-=n; S.me.earned=(S.me.earned||0)+n; dirty=true; } }
     presAcc+=dt;
     if (S.room&&presAcc>.1){ presAcc=0; const act=myAct(), walking=!!(S.target||anyKey()); const sig=Math.round(S.pos.x)+","+Math.round(S.pos.y)+","+act+","+walking; if (sig!==lastPres){ lastPres=sig; S.room.presence({pid:S.uid,x:Math.round(S.pos.x),y:Math.round(S.pos.y),act,walking}).catch(()=>{}); } }
     const nb=S.task?S.task.b:buildingNear(S.pos.x,S.pos.y);
@@ -1560,6 +1890,11 @@ function tick(nowP){
   cam.tx=Math.max(0,Math.min(W,cam.tx)); cam.tz=Math.max(0,Math.min(H,cam.tz));
   uiAcc+=dt;
   if (uiAcc>.5){ uiAcc=0;
+    { const tr=treasury(now), rt=cityRate(now), xp=cityXP(now), lv=cityLevel(xp), lo=LEVELS[lv-1]||0, hi=LEVELS[lv]||lo+1;
+      $("credits").textContent=fmt(tr); const re=$("rate"); re.textContent=fmtRate(rt)+"/min"; re.classList.toggle("neg",rt<0);
+      $("lvl").textContent="Lv "+lv; $("lvlBar").style.width=(lv>=LEVELS.length?100:Math.min(100,(xp-lo)/(hi-lo)*100)).toFixed(0)+"%";
+      if (lastLevel&&lv>lastLevel){ const un=Object.values(TYPES).filter(t=>t.lvl===lv&&!t.starter).map(t=>t.name); toast("The city reached level "+lv+"!"+(un.length?" Unlocked: "+un.slice(0,4).join(", ")+(un.length>4?" and more":""):"")); if (S.build) renderDrawer(); }
+      lastLevel=lv; }
     if (S.sheet&&S.sheet.kind==="building"){ const sb=S.buildings.find(x=>x.id===S.sheet.id); if (sb&&(underConstruction(sb,now)||(sb.done&&now-sb.done<1500))) showBuilding(sb.id); }
     const gt=gameTime(now), hh=Math.floor(gt.frac*24), mm=Math.floor((gt.frac*24-hh)*6)*10, night=nightAmount(gt.frac)>.5, wth=weatherFor(gt.day);
     $("day").textContent="Day "+gt.day+" · "+String(hh).padStart(2,"0")+":"+String(mm).padStart(2,"0");
@@ -1594,10 +1929,10 @@ function renderLogin(state){
   const sw=el("div",{class:"swatches",role:"group","aria-label":"Colour"});
   COLORS.forEach(c=>sw.append(el("button",{type:"button",style:"background:"+c,"aria-label":"Colour "+c,"aria-pressed":String(c===pickedColor),onclick:()=>{ pickedColor=c; [...sw.children].forEach((b,i)=>b.setAttribute("aria-pressed",String(COLORS[i]===c))); }})));
   form.append(el("label",{for:"charName"},"Your character's name"),input,el("label",null,"Their colour"),sw,
-    el("p",{class:"note"},S.solo?"Practice mode: the shared town isn't reachable from here, so this character lives in this browser only.":"You start with "+START_CREDITS+" coins and earn 1 more for every second you're here."),
+    el("p",{class:"note"},S.solo?"Practice mode: the shared town isn't reachable from here, so this character lives in this browser only.":"Everything is paid from the shared city treasury. Shops and businesses earn for it every minute, and you add 1 coin a second while you're here."),
     el("button",{class:"dark",type:"submit"},"Move in"));
   form.addEventListener("submit",async e=>{ e.preventDefault(); const name=input.value.trim().replace(/\s+/g," ").slice(0,18); if (!name){ input.focus(); return; }
-    S.me={name,color:pickedColor,credits:START_CREDITS,earned:0,tasks:0,home:null,created:Date.now()}; if (S.uid) S.players[S.uid]=S.me; dirty=true; flush(); try { await S.saveChain; } catch(e){} enterGame(); });
+    S.me={name,color:pickedColor,earned:0,spent:0,banked:0,tasks:0,home:null,created:Date.now()}; if (S.uid) S.players[S.uid]=S.me; dirty=true; flush(); try { await S.saveChain; } catch(e){} enterGame(); });
   box.append(form); setTimeout(()=>input.focus(),50);
 }
 function enterGame(){
@@ -1624,7 +1959,7 @@ async function boot(){
   const timer=setTimeout(()=>{ if (!first){ S.dataNote="The shared town hasn't answered yet, so this may be out of date."; toast("Still connecting to the shared town…"); } },10000);
   db.collection("players").onSnapshot(snap=>{
     const next={};
-    for (const d of snap.docs){ const v=d.data(); if (v&&typeof v.name==="string") next[d.id]={name:v.name.slice(0,18),color:safeColor(v.color),credits:+v.credits||0,earned:+v.earned||0,tasks:+v.tasks||0,home:v.home&&Number.isFinite(v.home.x)?{x:v.home.x,y:v.home.y}:null,created:v.created}; }
+    for (const d of snap.docs){ const v=d.data(); if (v&&typeof v.name==="string") next[d.id]={name:v.name.slice(0,18),color:safeColor(v.color),earned:+v.earned||0,spent:+v.spent||0,banked:+v.banked||0,tasks:+v.tasks||0,home:v.home&&Number.isFinite(v.home.x)?{x:v.home.x,y:v.home.y}:null,created:v.created}; }
     if (S.me&&S.playing) next[S.uid]=S.me;
     S.players=next; destCache=new Map();
     if (!snap.metadata.fromCache&&!first){ first=true; clearTimeout(timer); S.dataNote="";

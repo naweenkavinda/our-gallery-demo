@@ -100,3 +100,71 @@ The prototype draws everything in code. For the real game:
 | Shared-store document limits (25,000 docs) | Buildings + road chunks + players stay well under that. Roads are already grouped by chunk. |
 | GPL code from city builders | Borrow mechanics only, never code. |
 | Too close to a commercial game | Own name, UI, art direction and rules. |
+
+
+---
+
+## 7. v3 design: city economy, levels, unique buildings, sizes
+
+### 7.1 One shared city treasury (theory)
+
+Players no longer have personal wallets. The number at the top of the screen is the **city treasury**, which both players share.
+
+Money comes in three ways:
+
+| Source | Rule |
+|---|---|
+| **Business income** | Every finished building that makes money (shops, food, offices, industry, paid attractions, stations, farms) adds coins to the treasury every minute. The rate is about 1–2.5% of its price per minute, so it pays for itself in roughly 40–90 minutes. |
+| **Taxes** | Homes pay about 1.5 coins per resident per minute. |
+| **Players' work** | Activities and time online (+1 coin/sec per player) are paid into the treasury. |
+
+Money goes out in three ways:
+
+| Use | Rule |
+|---|---|
+| **Construction** | Buildings and roads are paid from the treasury. |
+| **Upkeep** | Public services (schools, clinics, parks, police, fire) cost a small amount per minute. |
+| **Refunds** | Demolishing gives back half the price, plus any income the building had earned but not yet been counted. |
+
+**Why it's computed rather than stored:** two players writing one shared number at the same time would overwrite each other's coins. So the treasury is never stored as one value. Every screen calculates it:
+
+```
+treasury = starting funds
+         + Σ each player's (earned + banked − spent)     ← each player only writes their own record
+         + Σ each finished building's income rate × minutes since it opened
+```
+
+Both players see the same number. Nobody's writes conflict, and the city keeps earning even when nobody is online.
+
+### 7.2 City level
+
+City XP grows with what the city has become. Both players share the level, because it is calculated from the shared city.
+
+```
+XP = Σ value of finished buildings  +  25 × population  +  5 × activities done
+```
+
+| Level | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 |
+|---|---|---|---|---|---|---|---|---|---|---|
+| XP needed | 0 | 3k | 6k | 12k | 22k | 36k | 58k | 90k | 140k | 210k |
+
+Each building unlocks at a level set by its price. Small shops and homes are available from level 1–2, big landmarks from level 6–8, and the international airport and rocket launch site only at level 9–10. Locked buildings show "Unlocks at level N" in the shop.
+
+### 7.3 Sizes and proportions
+
+* Footprints follow real scale. A cottage is 2×2. A hospital is 6×5, a stadium 8×7 and a university 9×7. The regional airport is 10×7 and the international airport 16×10.
+* **Resizable plots:** parks, gardens, town squares, parking lots, farms, orchards, vineyards, solar and wind farms and golf courses can be stretched with width and depth controls before building. Price and build time scale with the area.
+* Build time is 1 minute for 2×2 and grows with area, up to a 15-minute cap.
+
+### 7.4 Every building looks different
+
+Each building has its own combination of **base shape**, **roof** and **features**, not just its own colours.
+
+* **Roofs:** gable, steep, hip, shed, mansard, pyramid, barrel, sawtooth, dome.
+* **Features:** porch, bay windows, dormers, balconies, setbacks and spires, glass facades, entrance canopies, garage doors, marquees with bulbs, clock and corner towers, flags, rooftop tanks, antennas and masts, helipads, solar and green roofs, smokestacks, silos, cooling towers, fences, crates and umbrellas.
+* **Rooftop signs** for shops, for example a giant donut, ice-cream cone, coffee cup, pizza, bowling pin, book, gem, fish or music note.
+* **Purpose-built layouts** for big sites: an airport with runway, terminal, control tower and planes; a container port with cranes; a refinery with tanks and a flare stack; an amusement park with a coaster and big wheel; a golf course; a water park; a university campus; a lighthouse; a rocket launch site; parking lots and a multi-storey parking garage.
+
+### 7.5 Roads and parking
+
+The **Roads** tool now also offers a **Parking Lot** (resizable, with parked cars) and a **Parking Garage**. The new **Transport** shop tab holds stations, airports and the ferry terminal.
