@@ -188,7 +188,7 @@ input[type=text]:focus{border-color:var(--gold);outline:none;}
 <div class="overlay" id="login">
   <div class="panel welcome">
     <h1>Our Place</h1>
-    <p>A little town for two. Name your character and they'll live here day and night, working, reading and playing on their own. Whenever you drop in, you're the one steering.</p>
+    <p>A cosy little town for anyone to chill in. Name your character and they'll live here day and night, working, reading and playing on their own. Whenever you drop in, you're the one steering.</p>
     <div id="loginBody"><p>Opening the town…</p></div>
   </div>
 </div>
@@ -2647,7 +2647,7 @@ let loginState="loading";
 function renderChooser(){
   const box=$("loginBody"); box.textContent="";
   const live=el("button",{class:"choice",onclick:()=>{ S.modeChosen="live"; renderLogin(loginState); }},
-    el("span",{class:"ck"},"1"), el("b",null,"Visit the live city"), el("span",null,"The town you share. Your character, your treasury and everything you build is saved for both of you."));
+    el("span",{class:"ck"},"1"), el("b",null,"Visit the live city"), el("span",null,"The shared town everyone plays in. Your character, the city treasury and everything built is saved for all its residents."));
   const cre=el("button",{class:"choice",onclick:startCreative},
     el("span",{class:"ck"},"2"), el("b",null,"Creative mode"), el("span",null,"A ready-built city with 100,000,000 coins, every building unlocked and 3-second construction. Try anything; nothing is saved."));
   box.append(el("div",{class:"choices"},live,cre));
