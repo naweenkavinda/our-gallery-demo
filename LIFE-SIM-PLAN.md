@@ -168,3 +168,46 @@ Each building has its own combination of **base shape**, **roof** and **features
 ### 7.5 Roads and parking
 
 The **Roads** tool now also offers a **Parking Lot** (resizable, with parked cars) and a **Parking Garage**. The new **Transport** shop tab holds stations, airports and the ferry terminal.
+
+---
+
+## 8. v4 design: traffic laws, a growing population, a per-second economy
+
+### 8.1 Traffic laws (theory → rules the cars follow)
+
+Real junctions work because everyone agrees who goes first. Each car now follows these rules:
+
+1. **Stop line.** A car slows down and stops just before any junction (3- or 4-way).
+2. **One at a time.** A car may enter the junction only when it is empty. While it crosses, it *holds* the junction, and it releases it once it has left.
+3. **First come, first served.** Among the cars waiting at a junction, the one that arrived first goes first.
+4. **Give way to the right.** If two cars arrived at about the same time, the car with another car on its right waits.
+5. **Don't block the box.** A car only enters if there is room in the lane it is turning into, so queues never lock up a junction.
+6. **Keep your distance.** Cars hold a gap to the car in front, and their brake lights show while they are stopped.
+
+**Accidents are rare.** Only a driver who is already at a stop line, and only while another car is crossing, can make the mistake of "running the junction". That happens with a 1.5% chance, and at most once every 15 minutes across the whole city. A crash still blocks the junction until the police clear it.
+
+### 8.2 A growing population
+
+* Homes no longer fill up instantly. After a home is finished, **one new resident moves in every 30 seconds** until it is full. Population, and the number of people walking around, grows bit by bit as the city builds.
+* **Who lives in town:** about 52% adults, 20% children, 16% older people, 8% dogs and 4% cats.
+  * Children are smaller and quicker. Older people have grey hair and a cane, and walk at 70% speed.
+  * Adults vary in skin tone, clothes (trousers or dresses) and hair (short, long, bun, bald, cap or straw hat).
+  * Dogs and cats wander around their own home instead of going to work.
+* Every screen still calculates all of this from the clock, so both players see the same people in the same places.
+* **Free 3D models:** the usual CC0 model sites (Kenney, Quaternius, Poly Pizza, OpenGameArt) are blocked from this build machine. GitHub is reachable, so the game uses the free, rigged and animated **Fox** from the Khronos glTF Sample Models: model by PixelMannen (CC0), rigging and animation by @tomkranis (CC-BY 4.0). Foxes roam the forest. People and pets are generated in code in the same low-poly style, because hundreds of separately animated rigged models would be too slow on phones. In the full build (M2 in the milestones above), people and pets switch to rigged CC0 packs (Quaternius characters and animals) using the same "kinds".
+
+### 8.3 Per-second economy that doesn't spiral
+
+The aim is that building more lets you build more, but money never becomes meaningless.
+
+| Lever | Rule |
+|---|---|
+| **Income per second** | Every business pays the treasury `price ÷ payback time` per second. |
+| **Payback grows with tier** | Payback time is `240 s × 1.32^(level − 1)`. That is 4 minutes for level-1 buildings, about 12 minutes at level 5 and about 49 minutes at level 10. Small shops pay back fast, and landmarks are long-term investments. |
+| **Prices rise steeply with tier** | Price is `old price × 1.55^(level − 1)`, so a level-10 building costs about 50× a level-1 building of the same size. |
+| **Each extra copy costs more** | The 2nd copy of a type costs ×1.10, the 3rd ×1.21, and so on (at most ×4). Spamming the best earner gets expensive, so a varied city pays best. |
+| **Homes pay tax** | `price ÷ (payback × 1.4)` per second. Homes are slower earners but bring population, which counts towards XP. |
+| **Upkeep** | Public services, schools and parks cost `price ÷ (payback × 8)` per second. They give 1.5× XP and improve activity rewards nearby. |
+| **Refunds** | Demolishing returns half of what was actually paid. |
+
+City level thresholds scale with this curve: 0, 2.5k, 7k, 16k, 35k, 70k, 140k, 280k, 550k and 1.1M XP.
