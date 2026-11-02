@@ -1,133 +1,93 @@
-# Two-Player Life Sim — Plan
+# Our Place — Plan (v2: a living city)
 
-An original, cosy life-simulation game for two people. Each of you plays your own character in a shared house: build and furnish it together, look after your characters' needs, and do things together. It belongs to the life-sim genre but is our own design. It is not a copy of any existing game. No borrowed names, UI, logos, invented languages or icons.
+An original two-player city life sim. Each player has a named character who lives in a shared city around the clock. When you're online you steer your character. When you're away, it goes about its day on its own: walking between buildings, working, reading, playing. You earn credits by being in the game and by doing activities in buildings, and you spend them in the shop on new buildings and roads.
 
-Working title: **"Our Place"** (rename anytime).
+It belongs to the genre, but it's our own design. It isn't a copy of any existing game: no borrowed names, UI, icons or sounds.
+
+**Playable prototype:** https://claude.ai/artifact/X8UiY49z5Q5xomjo6edxs4 (source: `prototype/our-place.html`)
 
 ---
 
-## 1. Core idea
+## 1. Rules of the game
 
-| Pillar | What it means in play |
+| System | Rule |
 |---|---|
-| **Two players, one home** | Both of you are online in the same house at once, each controlling your own character. Changes show up for the other person straight away. |
-| **Build & decorate together** | A grid-based build mode: walls, floors, doors, windows, then furniture from a catalogue. Either of you can place items, and the other sees them appear. |
-| **Needs & moods** | Each character has 5 needs: Energy, Hunger, Fun, Social, Hygiene. Objects meet those needs, and mood comes from how the needs are doing. |
-| **Do things together** | Shared actions: cook and eat together, watch TV, dance, play a board game, sleep. Doing things together raises a shared "Bond" meter that unlocks new interactions and items. |
-| **Days & money** | A day/night cycle (we already have a real-time sky from the gallery). Simple jobs or hobbies earn money, and money buys furniture. |
-| **Saves** | The house and characters save to the server, so you can pick it up again tomorrow. |
+| **Characters** | One per player account. You pick a name and a shirt colour at first login. The character is drawn on the map at all times. |
+| **Control** | Only the logged-in owner can move their character: WASD/arrows, click or tap to walk, Shift to run. |
+| **Away mode** | When you're offline, your character follows a deterministic daily routine. Every 45 seconds it picks one of the 12 buildings nearest its home, walks there along the roads, and does that building's activity. Every viewer computes the same thing from the clock, so nobody needs a server to "run" the characters. |
+| **Activities** | Walk into a building and its button appears ("Read books · 6s · +25"). Activities take 5–10 seconds, and longer ones pay more. Moving cancels the activity. |
+| **Credits** | +1 credit every second you're in the game (only while the tab is visible). Plus activity rewards. New players start with 500. |
+| **Shop** | 23 building types in 6 tabs (Homes, Work, Fun, Learning, Services, Land), plus roads at 5 credits a tile. You place a building on the map, and it shows green or red depending on whether the spot is valid. |
+| **Demolish** | You can demolish buildings you built and get half the price back. |
+| **Townsfolk** | Every home adds residents (a Cottage adds 2, Apartments add 4). They wander the city on routines too, so the city fills up as it grows. |
+| **Day/night** | One in-game day lasts 12 real minutes. Windows light up at night. |
 
-**Out of scope for v1:** NPC townsfolk, aging and life stages, multiple lots, pets (but Teddy the dog from the gallery could come back later), and open-world neighbourhoods.
+### Ideas taken from city builders
+These are mechanics only, not code or art.
 
----
-
-## 2. Tech stack (reuses what the gallery already proves)
-
-The gallery repo already runs three.js, a Vite build, GitHub Pages, Poly Haven textures, Quaternius models and a phone-friendly control layer. The private version even had two-player features. So we stay on the same stack:
-
-| Layer | Choice | Why |
+| From | Mechanic | How it works in Our Place |
 |---|---|---|
-| Rendering | **three.js** (+ GLTFLoader, KTX2/Draco/Meshopt) | You already know it. Runs in any browser, including phones. |
-| Build | **Vite + TypeScript** | Same as the gallery. TypeScript helps once the game logic grows. |
-| Multiplayer | **Colyseus** (Node.js, MIT) | Authoritative rooms with automatic state sync. Better for two players than raw WebRTC, which needs STUN/TURN and signalling. |
-| Hosting | Client on **GitHub Pages**, server on a small VPS / Fly.io / Colyseus Cloud (~$15/mo) | The client stays free. The server only needs to handle one room. |
-| Persistence | SQLite (or JSON files) on the server | One house and two characters, so no real database is needed. |
-| Pathfinding | Grid A* on the build grid | The house is a grid anyway, so a navmesh isn't worth it. |
-| Characters | Rigged GLB humanoids + **Quaternius Universal Animation Library** (CC0, 250+ animations) | Walk, sit, sleep, eat, dance and idle animations are all included. |
-| Asset pipeline | Blender (headless) + **glTF Transform** | Convert, decimate, compress and generate thumbnails. |
+| Micropolis (the open-source original SimCity, GPL-3) and LinCity-NG (GPL-2) | **Service radius**: parks and services help the area around them | Every leisure building (park, playground, café, cinema, spa) within 10 tiles adds +5% to activity rewards, up to +30%. |
+| Same, plus OpenTTD | **Road access** | A building next to a road gets +10%. |
+| Micropolis / LinCity-NG | **Zones grow population** | Homes add townsfolk. Planned next: work buildings need enough residents nearby to "open". |
+| LinCity-NG | **Resources tied to land** | Mines only on barren land, sawmills and cabins only in forest, solar farms, spas and bazaars only in desert. |
+| Elmridge (MIT, a three.js town sim) | **Citizen schedules** | Away-mode routines. Planned next: a time-of-day schedule (work in the day, home at night). |
+| Citybound (AGPL) | **Multiplayer city** | Each building records who built it. Both players share one city. |
 
-Optional later: voice chat over WebRTC (the gallery had it), and a "photo mode" that saves screenshots (the gallery's photo booth).
+We don't copy GPL or AGPL code. We only reuse the ideas, so our code keeps whatever licence we choose.
 
 ---
 
-## 3. Assets — where they come from
+## 2. The map
 
-### 3a. NVIDIA SimReady on Hugging Face (the library you saw)
+- **256 × 256 tiles** (65,536 tiles), generated from a fixed seed with noise, so it's the same for everyone.
+- **Three biomes with uneven, natural borders:** barren clay in the west, forest in the north-east, desert in the south-east. Each has its own ground texture, decorations (rocks, trees, pines, cacti, shrubs) and lakes or oases.
+- **The starter town** sits where the three biomes meet. It has avenues and 12 founding buildings, so the town works on day one.
+- **Capacity:** about 50,000 buildable tiles. An average building takes about 9 tiles, which leaves room for **5,000+ buildings**. That easily covers the 1,000+ target, plus roads and parks.
+- **Rendering:** terrain is drawn in 16×16-tile chunks that are cached and drawn only when on screen, with a whole-map overview when zoomed out. A minimap sits in the corner.
 
-- **What:** `nvidia/simready-assets`, ~2,677 OpenUSD assets, ~490 GB in total, released through SimReady Central (Oct 2026).
-- **License:** Packages declare **CC-BY-4.0** (free to use, including in games, **with credit to NVIDIA**). But SimReady Central also lists community assets under other licences, including **non-commercial CC-BY-NC**, so **read each package's licence file**.
-- **Format:** OpenUSD (`.usd` / `.usda`) with MDL materials. three.js can't load these directly, so they need converting to GLB.
-- **Conversion route** (the same one a community GLB mirror, `codepawl/simready-glb`, already uses):
-  1. Import the USD in Blender (headless script).
-  2. Delete the physics, collision, proxy and grasp-helper prims.
-  3. Export GLB, then run glTF Transform: weld, simplify (decimate), compress textures to KTX2, Meshopt.
-  4. You lose physics metadata and MDL-only shader effects, which a game doesn't need anyway.
-- **Honest caveats:**
-  - The library is built for **robotics and industrial simulation**: warehouses, workbenches, shelving, boxes, tools, appliances. Home furniture is a small slice of it.
-  - The models are **photoreal and heavy**. Next to stylised assets they will look out of place, and they will hurt frame rate on phones unless they're heavily decimated.
-  - **Don't download all 490 GB.** Download only the categories you pick, or start from the community GLB mirror.
-- **Best use for us:** realistic kitchen appliances, a garage or workshop room, tools, boxes and clutter, and possibly a "realistic" art-style mode later.
+---
 
-### 3b. Better fit for a cosy home (stylised, CC0, already GLB/glTF)
+## 3. Data model (prototype → production)
 
-| Source | What | Licence |
+| Data | Prototype (artifact store) | Production (own server) |
 |---|---|---|
-| **KayKit / Kay Lousberg "Furniture Bits"** | 50+ low-poly furniture pieces, glTF | CC0 |
-| **Quaternius** (furniture, characters, Universal Animation Library) | Furniture, rigged humans, 250+ animations | CC0 |
-| **Kenney** (Furniture Kit, Animated Characters) | Furniture, simple rigged characters, glTF | CC0 |
-| **OpenGameArt "Tiny Treats Homely House"** | 16+ house props, glTF | CC0 |
-| **Mastjie "Low Poly Household Goods"** | 25 household items, glTF | Free for personal and commercial use |
-| **Poly Haven / ambientCG** | Floor, wall and fabric textures, HDRIs, some props | CC0 (already used in the gallery) |
-| **Mesh2Motion** | Free open-source auto-rigger, a Mixamo alternative, exports GLB | Open source |
-| **Mixamo** | More animations (needs an Adobe account, no longer updated) | Free to use |
+| Player | `players/<userId>` → name, colour, credits, earned, tasks, home | Same fields in Postgres/SQLite. **Credits checked by the server** (see risks). |
+| Building | `buildings/<id>` → type, x, y, builtBy, at | Same. Spatial index for fast lookups. |
+| Road | `roads/r_<cx>_<cy>` → list of tiles in that 16×16 chunk | Same chunking, or a bitmap. |
+| Live position | Room presence (x, y, current activity), not stored | Colyseus room state |
+| Away routine | Computed from clock + ids on every client | Same (deterministic) |
 
-### 3c. Decision: pick ONE art style
-
-Recommendation: **stylised low-poly (KayKit + Quaternius + Kenney) as the main look**, with SimReady items added only where they've been decimated and re-textured to match. It loads fast, runs on phones, and everything matches. The alternative is a photoreal look built around SimReady, which takes far more conversion work and needs a strong GPU.
-
-### 3d. Asset catalogue format
-
-Every item gets one entry in `assets/catalog.json`:
-
-```json
-{ "id": "sofa_2seat_blue", "file": "furniture/sofa_2seat_blue.glb",
-  "category": "living", "price": 450, "footprint": [2,1],
-  "slots": ["sit","sit"], "satisfies": {"energy": 1, "fun": 0},
-  "source": "KayKit", "license": "CC0", "credit": "" }
-```
-
-- `footprint` sets the grid cells the item takes up. `slots` are the places a character can sit or stand to use it. `satisfies` sets which needs it meets.
-- The `license` and `credit` fields feed an automatic **Credits** screen, which CC-BY (NVIDIA) requires.
+**Access rules in the prototype:** everyone can read players, but each person can only write their own player document. Buildings and roads can be written by anyone at Contributor level or above.
 
 ---
 
-## 4. Milestones
+## 4. Assets for the full 3D version
 
-Each milestone ends with something you can both play.
+The prototype draws everything in code. For the real game:
 
-| # | Milestone | Done when | Rough effort |
-|---|---|---|---|
-| **M0** | **Repo + asset pipeline** | New repo with Vite + TypeScript + three.js. A script turns a folder of GLB/USD into optimised GLB files, thumbnails and `catalog.json`. 30 starter items are in. | 2–3 evenings |
-| **M1** | **One character in a room** | Click the floor to walk there (A* on the grid). Third-person camera that can rotate and zoom. Idle and walk animations. | 3–4 evenings |
-| **M2** | **Two players** | Colyseus server; both of you join the same room by code. You see each other walk around, live. | 2–3 evenings |
-| **M3** | **Build mode** | Draw walls, paint floors, place doors and windows. Pick items from the catalogue, place, rotate and sell them. Synced to both players. | 5–7 evenings |
-| **M4** | **Needs & actions** | 5 needs that slowly drop. Click an object for an action menu (Sit, Sleep, Eat, Shower, Watch TV). Animations play at the object's slots. Mood face above each character. | 5–6 evenings |
-| **M5** | **Together actions & Bond** | Paired interactions (chat, hug, dance, cook together, eat at the same table). A Bond meter with unlockable items. | 3–4 evenings |
-| **M6** | **Character creator** | Body presets, skin tone, hair, outfit colours (material swaps on CC0 base meshes). Names. | 3–4 evenings |
-| **M7** | **Time, money, saving** | Day/night cycle (reuse the gallery sky), a simple job or hobby that earns money, the server saves the house, auto-save. | 3–4 evenings |
-| **M8** | **Polish** | Sound (procedural, like the gallery), music, photo mode, phone controls, Credits screen, performance pass. | ongoing |
-
-**First playable together: end of M2, about 2 weeks.** The "real game" feeling arrives around M4–M5.
+| Need | Source | Licence |
+|---|---|---|
+| City buildings, roads, props | **Kenney City Kit** (Roads, Suburban, Commercial, Industrial), all GLB | CC0 |
+| Furniture and interiors | KayKit Furniture Bits, Kenney Furniture Kit, Tiny Treats | CC0 |
+| Nature for the biomes (trees, rocks, cacti) | Quaternius nature packs, Kenney Nature Kit | CC0 |
+| Characters and animations | Quaternius characters + Universal Animation Library (250+ animations), Mesh2Motion for rigging | CC0 |
+| Realistic industrial props (factory, mine, warehouse, tools) | **NVIDIA SimReady** on Hugging Face, converted USD → GLB, credit NVIDIA | CC-BY-4.0 (check each package) |
+| Ground textures, sky | Poly Haven, ambientCG | CC0 |
 
 ---
 
-## 5. Project layout (new repo)
+## 5. Milestones
 
-```
-our-place/
-  client/            Vite + three.js + TypeScript
-    src/engine/      renderer, camera, input, loaders
-    src/world/       grid, walls, pathfinding, build mode
-    src/sim/         needs, actions, interactions (shared with server)
-    src/ui/          catalogue, needs panel, menus
-  server/            Colyseus room + persistence
-  shared/            types and sim rules used by both sides
-  tools/pipeline/    usd→glb, optimise, thumbnails, catalog builder
-  assets/            optimised GLB + catalog.json (raw downloads git-ignored)
-  CREDITS.md         generated from catalog.json
-```
-
-Large raw downloads (SimReady USD files, original packs) are **not committed**. Only the optimised GLB files go in the repo, and Git LFS takes over if they grow past a few hundred MB.
+| # | Milestone | Status |
+|---|---|---|
+| P | **2D prototype as a shared artifact**: map, biomes, login, characters, away routines, activities, credits per second, shop, roads, live two-player presence | **Done** |
+| M0 | New repo: Vite + TypeScript. Move the prototype logic into modules (`world/`, `sim/`, `ui/`). | Next |
+| M1 | Real server (Colyseus + SQLite). Server-side credit checks and building placement. Login with a simple account. | |
+| M2 | Switch rendering to three.js 3D with Kenney/Quaternius GLB assets. Keep the same tile grid. | |
+| M3 | Building interiors: walking in loads a small room scene where the activity plays out with animations. | |
+| M4 | Deeper simulation: time-of-day schedules, jobs needing residents, needs (energy, fun, hunger), building levels/upgrades. | |
+| M5 | Together actions (do an activity together for a bonus), chat, photo mode, phone controls polish. | |
 
 ---
 
@@ -135,18 +95,8 @@ Large raw downloads (SimReady USD files, original packs) are **not committed**. 
 
 | Risk | Mitigation |
 |---|---|
-| Mixed art styles look messy | Pick one style (3c). Run every asset through the same material and colour pass. |
-| SimReady files are huge and heavy | Download selectively, decimate, compress to KTX2, and set a per-item triangle budget (e.g. ≤ 5k). |
-| Licence mix-ups (CC-BY vs CC-BY-NC) | `license` is a required catalogue field. The pipeline refuses `NC` licences unless the game is kept private. A credits screen is generated automatically. |
-| Character animation is hard | Use CC0 rigs that share one skeleton plus the Quaternius animation library. Don't hand-animate. |
-| Scope creep | v1 = one house, two people. Nothing else until M7 is done. |
-| Too close to an existing commercial game | Own name, own UI, own icons. No borrowed sounds, languages or symbols. |
-
----
-
-## 7. Next steps
-
-1. **Create the new empty GitHub repo** (e.g. `naweenkavinda/our-place`) and send me the name. I'll attach it and set up M0.
-2. **Allow `huggingface.co`** (and `cdn-lfs.huggingface.co`) in this environment's network settings so the pipeline can pull SimReady assets. Right now it's blocked.
-3. **Pick the art style:** stylised low-poly (recommended) or photoreal.
-4. Optional: decide where the server runs (Fly.io free tier, a VPS, or Colyseus Cloud).
+| Credits are client-side in the prototype, so a player could cheat | Fine for two people who trust each other. In M1 the server grants credits from time and activity events. |
+| 1,000+ buildings slow down drawing | Only visible buildings are drawn. Chunk-cached terrain. Simpler drawing when zoomed out. In 3D, use instanced meshes and LOD. |
+| Shared-store document limits (25,000 docs) | Buildings + road chunks + players stay well under that. Roads are already grouped by chunk. |
+| GPL code from city builders | Borrow mechanics only, never code. |
+| Too close to a commercial game | Own name, UI, art direction and rules. |
