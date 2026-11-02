@@ -126,6 +126,13 @@ input[type=text]:focus{border-color:var(--gold);outline:none;}
 .swatches button{width:38px;height:38px;border-radius:50%;border:3px solid var(--cream);box-shadow:0 0 0 2px var(--line);}
 .swatches button[aria-pressed=true]{box-shadow:0 0 0 3px var(--ink);}
 .note{font-size:13px;color:var(--muted);font-weight:700;}
+.choices{display:grid;gap:10px;}
+.choice{display:grid;grid-template-columns:auto 1fr;gap:2px 14px;align-items:center;text-align:left;background:var(--cream-2);border:2px solid transparent;border-radius:18px;padding:14px 16px;}
+.choice:hover{border-color:var(--gold);}
+.choice .ck{grid-row:span 2;width:40px;height:40px;border-radius:50%;display:grid;place-items:center;background:var(--ink);color:var(--cream);font-family:var(--display);font-weight:700;font-size:20px;}
+.choice b{font-family:var(--display);font-weight:600;font-size:21px;}
+.choice span:last-child{color:var(--muted);font-weight:700;font-size:14px;line-height:1.4;}
+.modechip{position:fixed;z-index:5;top:calc(48px + env(safe-area-inset-top,0px));left:max(12px,env(safe-area-inset-left,0px));border:0;background:var(--ink);color:var(--cream);border-radius:999px;padding:7px 12px;font-family:var(--display);font-weight:600;font-size:14px;}
 #mini{display:block;width:100%;aspect-ratio:1;max-width:320px;justify-self:center;border-radius:16px;cursor:pointer;}
 @media (max-width:520px){
   .coins{font-size:22px;}
@@ -143,6 +150,7 @@ input[type=text]:focus{border-color:var(--gold);outline:none;}
 <div id="nogl" hidden>This town needs WebGL, which this browser has turned off.</div>
 
 <div class="coords" id="coords">X 0 · Y 0</div>
+<button class="modechip" id="modeChip" hidden title="Leave creative mode">Creative mode · Exit</button>
 <button class="panel ctl" id="ctlBtn" aria-pressed="false" hidden><svg viewBox="0 0 24 24"><rect x="2.5" y="7" width="19" height="11" rx="5.5"/><path d="M7.5 10.5v4M5.5 12.5h4"/><circle cx="15.5" cy="11.5" r=".8"/><circle cx="17.5" cy="13.8" r=".8"/></svg><span id="ctlTxt">Take control</span></button>
 
 <div class="top">
@@ -450,7 +458,7 @@ function priceFor(type,w,h){ return Math.round(basePriceFor(type,w,h)*Math.min(4
 function priceOf(b){ const [w,h]=baseSize(b); return basePriceFor(b.type,w,h); }
 function incomeOf(b){ const t=TYPES[b.type], [w,h]=baseSize(b); return t.resize?t.income*(w*h)/(t.size[0]*t.size[1]):t.income; }
 const tgOf=b=>{ const [w,h]=baseSize(b); return typeGeo(b.type,w,h); };
-function buildMs(type,w,h){ const s=TYPES[type].size; w=w||s[0]; h=h||s[1]; return Math.round(Math.max(1,Math.min(15,1+(w*h-4)*14/21))*60000); }   // 2×2 → 1 min … 5×5 → 15 min
+function buildMs(type,w,h){ if (S.creative) return 3000; const s=TYPES[type].size; w=w||s[0]; h=h||s[1]; return Math.round(Math.max(1,Math.min(15,1+(w*h-4)*14/21))*60000); }   // 2×2 → 1 min … 5×5 → 15 min
 function underConstruction(b,now){ return !!(b&&b.done&&(now||Date.now())<b.done); }
 function localToTile(b,lx,lz){ const [w,h]=baseSize(b), r=(b.rot|0)&3, o=ROT_OFF(w,h,r); let x=lx,z=lz;
   if (r===1){ x=-lz; z=lx; } else if (r===2){ x=-lx; z=-lz; } else if (r===3){ x=lz; z=-lx; } return [b.x+o[0]+x, b.y+o[1]+z]; }
@@ -1642,7 +1650,7 @@ function everyone(now){
    ============================================================ */
 function canPlace(type,x,y,rot,sw,sh){
   const t=TYPES[type],[w,h]=fp({type,rot:rot||0,sw,sh}), price=priceFor(type,sw,sh);
-  if (t.lvl>cityLevel(cityXP())) return {ok:false,why:"Unlocks at city level "+t.lvl};
+  if (t.lvl>curLevel()) return {ok:false,why:"Unlocks at city level "+t.lvl};
   if (x<1||y<1||x+w>W-1||y+h>H-1) return {ok:false,why:"Too close to the edge of the map"};
   for (let yy=y;yy<y+h;yy++) for (let xx=x;xx<x+w;xx++){ const i=yy*W+xx; if (water[i]) return {ok:false,why:"Can't build on water"}; if (occ[i]>=0) return {ok:false,why:"Something is already built here"}; if (road[i]) return {ok:false,why:"A road runs through here"}; }
   if (t.biome){ const bi=biome[(y+(h>>1))*W+x+(w>>1)]; if (!t.biome.includes(bi)) return {ok:false,why:"Only on "+t.biome.map(b=>BIOMES[b].toLowerCase()).join(" or ")}; }
@@ -1654,7 +1662,8 @@ async function placeBuilding(type,x,y,rot,sw,sh){
   const t=TYPES[type], now=Date.now(), price=priceFor(type,sw,sh), ms=buildMs(type,t.resize?sw:0,t.resize?sh:0), rec={type,x,y,rot,by:S.uid||"solo",at:now,done:now+ms,paid:price};
   if (t.resize&&sw&&sh){ rec.sw=sw; rec.sh=sh; }
   S.me.spent=(S.me.spent||0)+price; markDirty(true);
-  if (S.db){ try { await S.db.collection("buildings").add(rec); } catch(e){ S.me.spent-=price; markDirty(true); toast(e&&e.code==="quota_exceeded"?"The town is full: no room left for more buildings.":"Couldn't save that building. Try again."); return; } }
+  if (S.creative){ creativeBuildings.push(Object.assign({id:"cx"+Date.now()},rec)); setBuildings(creativeBuildings); }
+  else if (S.db){ try { await S.db.collection("buildings").add(rec); } catch(e){ S.me.spent-=price; markDirty(true); toast(e&&e.code==="quota_exceeded"?"The town is full: no room left for more buildings.":"Couldn't save that building. Try again."); return; } }
   else { soloState.buildings.push(Object.assign({id:"l"+Date.now()},rec)); saveSolo(); setBuildings(soloState.buildings); }
   toast("Construction started: "+t.name+" · ready in "+Math.max(1,Math.round(ms/60000))+" min","−"+fmt(price));
   if (!S.me.home){ S.me.home={x:x+1,y:y+1}; markDirty(true); }
@@ -1666,14 +1675,14 @@ async function commitRoads(){
   const by={}; for (const i of tiles){ const x=i%W,y=Math.floor(i/W),k="r_"+Math.floor(x/CH)+"_"+Math.floor(y/CH); (by[k]||=[]).push((y%CH)*CH+(x%CH)); }
   S.me.spent=(S.me.spent||0)+cost; markDirty(true);
   for (const k in by){ const merged=Array.from(new Set([...(S.dbRoads[k]||[]),...by[k]])).sort((a,b)=>a-b); S.dbRoads[k]=merged;
-    if (S.db){ try { await S.db.doc("roads/"+k).set({t:merged}); } catch(e){ toast("Some roads didn't save. Try again."); } } }
-  if (!S.db){ soloState.roads=S.dbRoads; saveSolo(); }
+    if (S.db&&!S.creative){ try { await S.db.doc("roads/"+k).set({t:merged}); } catch(e){ toast("Some roads didn't save. Try again."); } } }
+  if (!S.db&&!S.creative){ soloState.roads=S.dbRoads; saveSolo(); }
   S.roadTiles=new Set(); rebuildRoads(); toast("Paved "+tiles.length+" tiles","−"+fmt(cost)); renderDrawer();
 }
 let dirty=false;
 function markDirty(now){ dirty=true; if (now) flush(); }
 function flush(){
-  if (!dirty||!S.me) return; dirty=false;
+  if (!dirty||!S.me) return; dirty=false; if (S.creative) return;
   const snap={name:S.me.name,color:S.me.color,earned:Math.floor(S.me.earned||0),spent:Math.round(S.me.spent||0),banked:Math.floor(S.me.banked||0),tasks:S.me.tasks||0,home:S.me.home||null,created:S.me.created||Date.now(),lastSeen:Date.now()};
   if (S.db&&S.uid&&S.uid!=="solo") S.saveChain=S.saveChain.then(()=>S.db.doc("players/"+S.uid).set(snap)).catch(()=>{ dirty=true; });
   else { soloState.me=snap; saveSolo(); }
@@ -1767,8 +1776,10 @@ function showPerson(id){
 let followId=null;
 async function demolish(b){
   const t=TYPES[b.type];
-  if (S.db){ try { await S.db.doc("buildings/"+b.id).delete(); } catch(e){ toast("Couldn't demolish. Try again."); return; } }
-  else { soloState.buildings=soloState.buildings.filter(x=>x.id!==b.id); saveSolo(); setBuildings(soloState.buildings); }
+  if (S.creative){ }
+  else if (S.db){ try { await S.db.doc("buildings/"+b.id).delete(); } catch(e){ toast("Couldn't demolish. Try again."); return; } }
+  else if (!S.creative) { soloState.buildings=soloState.buildings.filter(x=>x.id!==b.id); saveSolo(); setBuildings(soloState.buildings); }
+  if (S.creative){ creativeBuildings=creativeBuildings.filter(x=>x.id!==b.id); setBuildings(creativeBuildings); }
   const refund=Math.floor((b.paid||priceOf(b))/2), acc=Math.floor(accrued(b,Date.now())); S.me.banked=(S.me.banked||0)+refund+acc; markDirty(true); toast(t.name+" taken down. Half the cost goes back to the city.","+"+fmt(refund)); closeSheet();
 }
 function showPeople(){
@@ -1835,7 +1846,7 @@ function renderDrawer(){
       el("div",{style:"flex:1;min-width:150px"}, el("b",{style:"font-family:var(--display);font-size:20px"},n+" tiles"), el("div",{class:"note"},fmt(n*ROAD_PRICE)+" coins · "+ROAD_PRICE+" per tile")),
       el("button",{class:"soft",onclick:()=>{ S.roadTiles=new Set(); renderDrawer(); }, disabled:!n},"Clear"),
       el("button",{class:"dark",onclick:commitRoads, disabled:!n},"Pave")));
-    for (const key of ["parking","parkgarage"]){ const t=TYPES[key], locked=t.lvl>cityLevel(cityXP());
+    for (const key of ["parking","parkgarage"]){ const t=TYPES[key], locked=t.lvl>curLevel();
       cards.append(el("button",{class:"card",disabled:locked||treasury()<t.price,onclick:()=>selectPlace(key)}, el("img",{src:previewURL(key),alt:"",width:"116",height:"66",style:"width:116px;height:66px;object-fit:contain"}), el("b",null,t.name), el("span",{class:"p"},fmt(t.price)+(t.resize?" · resizable":"")), locked?el("span",{class:"lock"},"Unlocks at level "+t.lvl):null)); }
     updateChrome(); return;
   }
@@ -1843,7 +1854,7 @@ function renderDrawer(){
   for (const c of CATS) cats.append(el("button",{"aria-pressed":String(c===S.cat),onclick:()=>{ S.cat=c; renderDrawer(); }},c));
   for (const key in TYPES){ const t=TYPES[key]; if (t.cat!==S.cat||t.starter) continue;
     const pv=el("img",{src:previewURL(key),alt:"",width:"116",height:"66",style:"width:116px;height:66px;object-fit:contain"});
-    const lvl=cityLevel(cityXP()), locked=t.lvl>lvl, afford=treasury()>=t.price, inc=t.income;
+    const lvl=curLevel(), locked=t.lvl>lvl, afford=treasury()>=t.price, inc=t.income;
     cards.append(el("button",{class:"card","aria-pressed":String(S.place===key),disabled:locked||!afford,title:t.act+" · "+t.secs+"s · +"+t.reward,onclick:()=>{ selectPlace(key); }},
       pv, el("b",null,t.name), el("span",{class:"p"},fmt(t.price)+" · "+Math.max(1,Math.round(buildMs(key)/60000))+" min"),
       locked?el("span",{class:"lock"},"Unlocks at level "+t.lvl):el("span",{class:"lock",style:"color:"+(inc>=0?"var(--green)":"var(--muted)")},fmtRate(inc)+"/s"+(t.resize?" · resizable":"")),
@@ -1958,6 +1969,7 @@ function setControl(on){
   toast(on?"You're steering "+S.me.name+". Press C or the button to let them roam.":S.me.name+" is living on their own again.");
 }
 $("ctlBtn").onclick=()=>setControl(!S.control);
+$("modeChip").onclick=()=>location.reload();
 function myAct(){ if (S.task) return TYPES[S.task.b.type].verb+" at "+TYPES[S.task.b.type].name; if (auto&&auto.phase==="do") return TYPES[auto.b.type].verb+" at "+TYPES[auto.b.type].name; return null; }
 function roam(){
   if (S.control||S.task) return;
@@ -1998,8 +2010,8 @@ function tick(nowP){
   if (uiAcc>.5){ uiAcc=0;
     { const tr=treasury(now), rt=cityRate(now), xp=cityXP(now), lv=cityLevel(xp), lo=LEVELS[lv-1]||0, hi=LEVELS[lv]||lo+1;
       $("credits").textContent=fmt(tr); const re=$("rate"); re.textContent=fmtRate(rt)+"/s"; re.classList.toggle("neg",rt<0);
-      $("lvl").textContent="Lv "+lv; $("lvlBar").style.width=(lv>=LEVELS.length?100:Math.min(100,(xp-lo)/(hi-lo)*100)).toFixed(0)+"%";
-      if (lastLevel&&lv>lastLevel){ const un=Object.values(TYPES).filter(t=>t.lvl===lv&&!t.starter).map(t=>t.name); toast("The city reached level "+lv+"!"+(un.length?" Unlocked: "+un.slice(0,4).join(", ")+(un.length>4?" and more":""):"")); if (S.build) renderDrawer(); }
+      $("lvl").textContent=S.creative?"All":"Lv "+lv; $("lvlBar").style.width=(lv>=LEVELS.length?100:Math.min(100,(xp-lo)/(hi-lo)*100)).toFixed(0)+"%";
+      if (lastLevel&&lv>lastLevel&&!S.creative){ const un=Object.values(TYPES).filter(t=>t.lvl===lv&&!t.starter).map(t=>t.name); toast("The city reached level "+lv+"!"+(un.length?" Unlocked: "+un.slice(0,4).join(", ")+(un.length>4?" and more":""):"")); if (S.build) renderDrawer(); }
       lastLevel=lv; }
     if (S.sheet&&S.sheet.kind==="building"){ const sb=S.buildings.find(x=>x.id===S.sheet.id); if (sb&&(underConstruction(sb,now)||(sb.done&&now-sb.done<1500))) showBuilding(sb.id); }
     const gt=gameTime(now), hh=Math.floor(gt.frac*24), mm=Math.floor((gt.frac*24-hh)*6)*10, night=nightAmount(gt.frac)>.5, wth=weatherFor(gt.day);
@@ -2016,10 +2028,83 @@ function tick(nowP){
 }
 
 /* ============================================================
+   CREATIVE MODE: a ready-built city, 100 million coins, nothing saved
+   ============================================================ */
+let creativeBuildings=[];
+function rng(seed){ let a=seed>>>0; return ()=>{ a=(a+0x6D2B79F5)>>>0; let t=Math.imul(a^(a>>>15),1|a); t=(t+Math.imul(t^(t>>>7),61|t))^t; return ((t^(t>>>14))>>>0)/4294967296; }; }
+function generateCity(){
+  const R=rng(20261102), out=[], used=new Uint8Array(W*H), rd=new Uint8Array(W*H); let id=0;
+  // starters and their roads are already there
+  for (const [,type,dx,dy] of STARTER){ const [w,h]=TYPES[type].size; for (let y=TOWN.y+dy;y<TOWN.y+dy+h;y++) for (let x=TOWN.x+dx;x<TOWN.x+dx+w;x++) used[y*W+x]=1; }
+  for (let i=0;i<W*H;i++) if (starterRoad[i]) rd[i]=1;
+  const fits=(type,x,y,rot,sw,sh,allowRoad)=>{ const t=TYPES[type], [w,h]=fp({type,rot,sw,sh});
+    if (x<2||y<2||x+w>W-2||y+h>H-2) return false;
+    for (let yy=y;yy<y+h;yy++) for (let xx=x;xx<x+w;xx++){ const i=yy*W+xx; if (water[i]||used[i]||(!allowRoad&&rd[i])) return false; }
+    if (t.biome){ const bi=biome[(y+(h>>1))*W+x+(w>>1)]; if (!t.biome.includes(bi)) return false; }
+    return true; };
+  const put=(type,x,y,rot,sw,sh)=>{ const [w,h]=fp({type,rot,sw,sh}); for (let yy=y;yy<y+h;yy++) for (let xx=x;xx<x+w;xx++) used[yy*W+xx]=1;
+    const b={id:"c"+(++id),type,x,y,rot,by:"creative",at:0,done:0}; if (sw&&sh){ b.sw=sw; b.sh=sh; } out.push(b); };
+  // 1. landmarks first, searched outward from a preferred spot
+  const LAND=[["airport",42,40],["regional",62,22],["launch",80,60],["amusement",28,24],["stadium",30,-14],["university",24,-30],["arena",44,-6],["zoo",-30,22],["golf",56,-36],
+    ["port",-52,-6],["refinery",-56,22],["powerplant",-40,-28],["carfactory",-46,36],["steelmill",-62,-24],["logistics",-30,40],["hypermarket",16,20],["convention",-16,-18],
+    ["hospital",12,-16],["medcentre",-20,12],["cityhall",-4,12],["trainstation",4,-14],["mall",20,10],["waterpark",50,14],["golf",70,-10],["windfarm",-70,6],["solar",70,40]];
+  for (const [type,ax,ay] of LAND){ const t=TYPES[type]; let done=false;
+    for (let r=0;r<34&&!done;r++) for (let k=0;k<Math.max(1,r*8)&&!done;k++){ const a=k/Math.max(1,r*8)*Math.PI*2, x=Math.round(TOWN.x+ax+Math.cos(a)*r), y=Math.round(TOWN.y+ay+Math.sin(a)*r);
+      const sw=t.resize?t.size[0]+3:0, sh=t.resize?t.size[1]+2:0; if (fits(type,x,y,0,sw,sh,false)){ put(type,x,y,0,sw,sh); done=true; } } }
+  // 2. a street grid every 9 tiles (roads never cross buildings or water)
+  const x0=TOWN.x-58, x1=TOWN.x+72, y0=TOWN.y-42, y1=TOWN.y+56;
+  for (let x=x0;x<=x1;x++) for (let y=y0;y<=y1;y++){ if (!inMap(x,y)) continue; const i=y*W+x;
+    if (((x-(TOWN.x+1))%9===0||(y-TOWN.y)%9===0)&&!used[i]&&!water[i]) rd[i]=1; }
+  // 3. fill each block with buildings that face a road, by district
+  const pools={
+    downtown:["skyscraper","corporate","office","hotel","grandhotel","bank","lawfirm","deptstore","theatre","opera","museum","gallery","tvstudio","datacentre","callcentre","cinema","metro","parkgarage","newspaper","cowork","postoffice","penthouse","highrise","square"],
+    shops:["grocer","supermarket","florist","bookshop","hardware","pharmacy","boutique","toyshop","electronics","furniture","petshop","barber","salon","laundry","giftshop","musicstore","sports","jeweller","market","carwash","petrol","dealer","cafe","bakery","pizzeria","diner","sushi","icecream","teahouse","restaurant","foodcourt","juicebar","grill","donuts","gym","bowling","arcade","karaoke","icerink","aquarium","parking","clinic","bank","studio","apartment"],
+    homes:["cottage","bungalow","townhouse","terrace","duplex","villa","mansion","apartment","towerblock","loft","halls","retire","highrise","park","playground","school","kindergarten","library","community","clinic","fire","police","grocer","cafe","vet","busstation","langschool","musicschool"],
+    industry:["factory","warehouse","bottler","recycling","textile","printworks","breadfactory","busdepot","wastedepot","watertreat","mine","quarry","farm","ranch","greenhouse","logistics","parking"],
+    forest:["cabin","lodge","sawmill","ranger","orchard","beefarm","vineyard","greenhouse","cabin","park"],
+    desert:["solar","spa","observatory","bazaar","resort","dates","camel","saltworks","petrol","planetarium","science"],
+  };
+  const district=(x,y)=>{ const i=y*W+x, d=Math.hypot(x-TOWN.x,y-TOWN.y), b=biome[i];
+    if (d<20) return "downtown"; if (b===0&&x<TOWN.x-14) return d<36?"shops":"industry"; if (b===2&&d>34) return "desert"; if (b===1&&d>36) return "forest"; return d<30?"shops":"homes"; };
+  const frontOK=(type,x,y,rot,sw,sh)=>{ const [w,h]=fp({type,rot,sw,sh}); const cells=[];
+    if (rot===0) for (let xx=x;xx<x+w;xx++) cells.push([xx,y+h]); else if (rot===2) for (let xx=x;xx<x+w;xx++) cells.push([xx,y-1]);
+    else if (rot===1) for (let yy=y;yy<y+h;yy++) cells.push([x-1,yy]); else for (let yy=y;yy<y+h;yy++) cells.push([x+w,yy]);
+    return cells.some(([a,b])=>inMap(a,b)&&rd[b*W+a]); };
+  for (let y=y0;y<=y1;y++) for (let x=x0;x<=x1;x++){ if (!inMap(x,y)) continue; const i=y*W+x; if (used[i]||rd[i]||water[i]) continue;
+    const pool=pools[district(x,y)]; if (R()<.25) continue;
+    for (let tries=0;tries<6;tries++){ const type=pool[(R()*pool.length)|0], t=TYPES[type]; if (!t||t.starter) continue;
+      const sw=t.resize?t.size[0]+((R()*2)|0):0, sh=t.resize?t.size[1]+((R()*2)|0):0; let placed=false;
+      for (const rot of [0,2,1,3].sort(()=>R()-.5)) if (fits(type,x,y,rot,sw,sh,false)&&frontOK(type,x,y,rot,sw,sh)){ put(type,x,y,rot,sw,sh); placed=true; break; }
+      if (placed) break; } }
+  // roads as chunk lists, the same shape the live city stores
+  const roads={}; for (let i=0;i<W*H;i++) if (rd[i]&&!starterRoad[i]){ const x=i%W, y=(i/W)|0, k="r_"+Math.floor(x/CH)+"_"+Math.floor(y/CH); (roads[k]||(roads[k]=[])).push((y%CH)*CH+(x%CH)); }
+  return {buildings:out, roads};
+}
+function startCreative(){
+  S.creative=true; S.modeChosen="creative"; S.room=null; S.online={}; S.solo=false;
+  S.uid="creative"; S.me={name:"Builder",color:"#d9a23a",earned:100000000-START_TREASURY,spent:0,banked:0,tasks:0,home:null,created:Date.now()-1000};
+  S.players={creative:S.me};
+  const g=generateCity(); creativeBuildings=g.buildings; S.dbRoads=g.roads; setBuildings(creativeBuildings);
+  $("modeChip").hidden=false; enterGame();
+  toast("Creative mode: "+g.buildings.length+" buildings, 100,000,000 coins, everything unlocked. Nothing here is saved.");
+}
+const curLevel=()=>S.creative?10:cityLevel(cityXP());
+
+/* ============================================================
    LOGIN + DATA
    ============================================================ */
 let pickedColor=COLORS[0];
+let loginState="loading";
+function renderChooser(){
+  const box=$("loginBody"); box.textContent="";
+  const live=el("button",{class:"choice",onclick:()=>{ S.modeChosen="live"; renderLogin(loginState); }},
+    el("span",{class:"ck"},"1"), el("b",null,"Visit the live city"), el("span",null,"The town you share. Your character, your treasury and everything you build is saved for both of you."));
+  const cre=el("button",{class:"choice",onclick:startCreative},
+    el("span",{class:"ck"},"2"), el("b",null,"Creative mode"), el("span",null,"A ready-built city with 100,000,000 coins, every building unlocked and 3-second construction. Try anything; nothing is saved."));
+  box.append(el("div",{class:"choices"},live,cre));
+}
 function renderLogin(state){
+  loginState=state; if (!S.modeChosen){ renderChooser(); return; }
   const box=$("loginBody"); box.textContent="";
   if (state==="loading"){ box.append(el("p",null,"Opening the town…")); return; }
   if (state==="readonly"){ box.append(el("p",null,"Your access to this page is view-only, so you can watch the town but can't move in. Ask the owner to share it with you as a Contributor."), el("button",{class:"dark",onclick:()=>{ $("login").hidden=true; }},"Watch the town")); return; }
@@ -2056,6 +2141,7 @@ async function boot(){
   requestAnimationFrame(tick); renderLogin("loading");
   const use=n=>(window.claude&&window.claude.use?window.claude.use(n):Promise.resolve(null)).catch(()=>null);
   const [db,user,room]=await Promise.all([use("db"),use("user"),use("room")]);
+  if (S.creative) return;
   S.user=user; const uid=user?await user.id():null;
   if (!db||!uid){ startSolo(); return; }
   S.db=db; S.uid=uid; S.solo=false;
@@ -2063,7 +2149,7 @@ async function boot(){
   if (room){ S.room=room; wireRoom(room); }
   let first=false;
   const timer=setTimeout(()=>{ if (!first){ S.dataNote="The shared town hasn't answered yet, so this may be out of date."; toast("Still connecting to the shared town…"); } },10000);
-  db.collection("players").onSnapshot(snap=>{
+  db.collection("players").onSnapshot(snap=>{ if (S.creative) return;
     const next={};
     for (const d of snap.docs){ const v=d.data(); if (v&&typeof v.name==="string") next[d.id]={name:v.name.slice(0,18),color:safeColor(v.color),earned:+v.earned||0,spent:+v.spent||0,banked:+v.banked||0,tasks:+v.tasks||0,home:v.home&&Number.isFinite(v.home.x)?{x:v.home.x,y:v.home.y}:null,created:v.created}; }
     if (S.me&&S.playing) next[S.uid]=S.me;
@@ -2072,16 +2158,16 @@ async function boot(){
       if (!S.me&&next[S.uid]) S.me=Object.assign({},next[S.uid]); if (S.me) S.players[S.uid]=S.me;
       if (!S.playing) renderLogin(S.canWrite||S.me?"ready":"readonly"); }
   },()=>{ clearTimeout(timer); if (!S.playing) startSolo(); });
-  db.collection("buildings").onSnapshot(snap=>{ setBuildings(snap.docs.map(d=>Object.assign({id:d.id},d.data()))); if (S.sheet&&S.sheet.kind==="building") showBuilding(S.sheet.id); if (S.build) renderDrawer(); },()=>{});
-  db.collection("roads").onSnapshot(snap=>{ const r={}; for (const d of snap.docs){ const v=d.data(); if (v&&Array.isArray(v.t)) r[d.id]=v.t.filter(n=>Number.isInteger(n)&&n>=0&&n<CH*CH); } S.dbRoads=r; rebuildRoads(); },()=>{});
+  db.collection("buildings").onSnapshot(snap=>{ if (S.creative) return; setBuildings(snap.docs.map(d=>Object.assign({id:d.id},d.data()))); if (S.sheet&&S.sheet.kind==="building") showBuilding(S.sheet.id); if (S.build) renderDrawer(); },()=>{});
+  db.collection("roads").onSnapshot(snap=>{ if (S.creative) return; const r={}; for (const d of snap.docs){ const v=d.data(); if (v&&Array.isArray(v.t)) r[d.id]=v.t.filter(n=>Number.isInteger(n)&&n>=0&&n<CH*CH); } S.dbRoads=r; rebuildRoads(); },()=>{});
 }
-function startSolo(){
+function startSolo(){ if (S.creative) return;
   S.solo=true; S.db=null; loadSolo();
   S.me=soloState.me?Object.assign({},soloState.me):null; S.dbRoads=soloState.roads||{}; rebuildRoads(); setBuildings(soloState.buildings||[]);
   S.uid="solo"; if (S.me) S.players.solo=S.me; renderLogin("ready");
 }
 function wireRoom(room){
-  room.onPeers(ch=>{ const now=Date.now();
+  room.onPeers(ch=>{ if (S.creative) return; const now=Date.now();
     for (const p of ch.peers){ if (p.sameTab) continue; const pr=p.presence||{}, id=p.by||(typeof pr.pid==="string"?pr.pid:null); if (!id||!Number.isFinite(pr.x)||!Number.isFinite(pr.y)) continue;
       S.online[id]={x:Math.max(0,Math.min(WORLD,pr.x)),y:Math.max(0,Math.min(WORLD,pr.y)),act:typeof pr.act==="string"?pr.act.slice(0,60):null,walking:!!pr.walking,seen:now}; }
     for (const p of ch.left){ const id=p.by||(p.presence&&p.presence.pid); if (id&&S.online[id]) delete S.online[id]; }
