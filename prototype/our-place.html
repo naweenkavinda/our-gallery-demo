@@ -891,17 +891,20 @@ function typeGeo(key){
     default:
       gb.box(x,0,z,ww,Hh,dd,t.wall||"#cccccc");
   }
+  // every building gets a name board; open sites (parks, farms, towers) get one on two posts at the front
+  const text=t.sign||t.name.toUpperCase();
+  if (!signAt){ signAt={y:.44,z:h-.12}; gb.box(w/2-Math.min(ww*.43,.9),0,h-.16,.05,.4,.05,"#6b4e36"); gb.box(w/2+Math.min(ww*.43,.9)-.05,0,h-.16,.05,.4,.05,"#6b4e36"); }
   const out=gb.finish(); out.top=top;
-  if (t.sign&&signAt){ const s=makeSign(t,key,ww); out.sign=s; out.signGeo=new THREE.PlaneGeometry(s.w,s.h); out.signPos=new THREE.Vector3(x+ww/2,signAt.y,signAt.z+.025); }
+  if (signAt){ const s=makeSign(t,key,ww,text); out.sign=s; out.signGeo=new THREE.PlaneGeometry(s.w,s.h); out.signPos=new THREE.Vector3(x+ww/2,signAt.y,signAt.z+.025); }
   TYPEGEO[key]=out; return out;
 }
-function makeSign(t,key,ww){
+function makeSign(t,key,ww,text){
   const fs=72, c=document.createElement("canvas"); let g=c.getContext("2d"); g.font="800 "+fs+"px Nunito, system-ui, sans-serif";
-  const tw=g.measureText(t.sign).width; c.width=Math.ceil(tw+fs*1.1); c.height=Math.round(fs*1.55);
+  const tw=g.measureText(text).width; c.width=Math.ceil(tw+fs*1.1); c.height=Math.round(fs*1.55);
   g=c.getContext("2d"); const dark=hashStr(key)%3===0||t.wall==="#f1efea";
   g.fillStyle=dark?"#3b322c":"#f2ead6"; const r=18; g.beginPath(); if (g.roundRect) g.roundRect(4,4,c.width-8,c.height-8,r); else g.rect(4,4,c.width-8,c.height-8); g.fill();
   g.lineWidth=8; g.strokeStyle=dark?"#6b5a48":"#8a7556"; g.stroke();
-  g.font="800 "+fs+"px Nunito, system-ui, sans-serif"; g.textAlign="center"; g.textBaseline="middle"; g.fillStyle=dark?"#f2ead6":(t.awning||t.roof||"#3b322c"); g.fillText(t.sign,c.width/2,c.height/2+5);
+  g.font="800 "+fs+"px Nunito, system-ui, sans-serif"; g.textAlign="center"; g.textBaseline="middle"; g.fillStyle=dark?"#f2ead6":(t.awning||t.roof||"#3b322c"); g.fillText(text,c.width/2,c.height/2+5);
   const tex=new THREE.CanvasTexture(c); tex.anisotropy=4;
   const aspect=c.width/c.height, sw=Math.min(ww*.86,.3*aspect);
   return {mat:new THREE.MeshBasicMaterial({map:tex,transparent:true}), w:sw, h:sw/aspect};
@@ -1095,8 +1098,6 @@ function label2(x,y,text,dark,small){
 function drawLabels(ppl,now){
   lctx.setTransform(DPR,0,0,DPR,0,0); lctx.clearRect(0,0,innerWidth,innerHeight);
   const z=zl();
-  if (z>1.1){ let n=0; for (const o of bObjs.values()){ const b=o.b, t=TYPES[b.type], cx=b.x+t.size[0]/2, cz=b.y+t.size[1]/2;
-      if (Math.abs(cx-cam.tx)>16||Math.abs(cz-cam.tz)>16) continue; const p=toScreen(cx,0,b.y+t.size[1]+.25); if (!p) continue; label2(p.x,p.y+8,t.name,false,true); if (++n>50) break; } }
   hitPeople=[];
   for (const p of ppl){ const x=p.x/T, zz=p.y/T, s=toScreen(x,.62,zz); if (!s) continue; hitPeople.push({id:p.id,x:s.x,y:s.y+14});
     const h=label2(s.x,s.y-10,p.rec.name+(p.away?" · away":""),false,false);
