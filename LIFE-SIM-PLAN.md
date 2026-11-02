@@ -211,3 +211,66 @@ The aim is that building more lets you build more, but money never becomes meani
 | **Refunds** | Demolishing returns half of what was actually paid. |
 
 City level thresholds scale with this curve: 0, 2.5k, 7k, 16k, 35k, 70k, 140k, 280k, 550k and 1.1M XP.
+
+---
+
+## 9. v5 design: stages, a living world, real transport, disasters
+
+### 9.1 Start small, grow in stages
+A new city starts with **one house per player**. It's free, already built, and next to the main road. Development then happens in **10 stages**. Each stage has **requirements**: specific buildings plus a minimum population. Reaching a stage **unlocks** that stage's buildings. Stages never go backwards; the highest stage reached is saved for the city.
+
+| Stage | Name | To reach it you need | Unlocks (examples) |
+|---|---|---|---|
+| 1 | Homestead | your first house | cottages, bungalows, cabins, farm, orchard, market, café, park, playground, parking |
+| 2 | Hamlet | 3 homes · a farm · a market · 6 people | Town Hall, school, library, bakery, florist, barber, townhouses, clinic, sawmill, town square |
+| 3 | Village | Town Hall · school · 18 people | fire station, police, bus station, apartments, office, pharmacy, petrol, post office, gym, warehouse, mine |
+| 4 | Town | fire station · police station · bus station · 45 people | hospital, train station, bank, factory, supermarket, cinema, museum, college, hotel, pool, waste depot |
+| 5 | Large Town | hospital · train station · bank · 90 people | mall, city hall, courthouse, tech campus, TV studio, zoo, aquarium, tower blocks, bus depot, logistics |
+| 6 | City | city hall · mall · college · 160 people | university, stadium, arena, opera, convention centre, skyscraper, power plant, golf, water park |
+| 7 | Large City | university · stadium · power plant · 260 people | regional airport, amusement park, refinery, container port, luxury towers |
+| 8 | Metropolis | regional airport · container port · 380 people | international airport, corporate HQ |
+| 9 | Megacity | international airport · amusement park · 520 people | rocket launch site |
+| 10 | Capital | rocket launch site · 650 people | the city is complete |
+
+### 9.2 A Minecraft-style world
+* **Biomes** come from temperature and moisture noise, like Minecraft. There are 11:
+  * plains, forest, birch forest, taiga, snowy tundra, mountains, desert, savanna, badlands, swamp and beach.
+  * Each has its own ground colour and vegetation: oak, birch, dark oak, spruce, snowy spruce, acacia, swamp trees, cacti, dead bushes, boulders and snow caps.
+* **Hills and mountains:** smooth low hills everywhere, plus steep mountains that can't be built on. Buildings need fairly flat ground and stand on a stone foundation.
+* **Rivers** wind across the map, with lakes, a swamp and sandy beaches.
+* **Main road and railway:** a highway runs from the west edge to the east edge and another from north to south, crossing at the town. They curve around mountains and use bridges over rivers. A main railway also crosses the map. Vehicles enter and leave at the map edges instead of vanishing.
+
+### 9.3 Roads, bridges, rails
+* **Line tool.** Drag from a start point to an end point to lay a road. **Diagonal roads** come out automatically when the line isn't straight.
+* **Smooth roads.** L-bends are drawn as smooth curves, and junctions have rounded corners.
+* **Tools:** Road (land), **Bridge** (road over water, more expensive) and **Rail** (track, with rail bridges over water).
+* **Smooth driving.** Cars follow curved paths through bends and junctions, and they turn smoothly.
+
+### 9.4 Vehicles appear when the city can support them
+| Vehicle | Appears after you build |
+|---|---|
+| Private cars | always |
+| Buses | bus station |
+| Police patrols (and crash response) | police station |
+| Fire trucks | fire station |
+| Ambulances | hospital or clinic |
+| Garbage trucks | waste depot |
+| Delivery trucks | warehouse, factory or distribution centre |
+| Taxis | train station or airport |
+| Trains on the rails | train station |
+
+### 9.5 Disasters and renovation
+* Roughly every 3 game days (about 36 real minutes), a disaster may strike. It's decided by the clock, so both players see the same one.
+* **Explosion:** an industrial or petrol site blows up and damages its neighbours.
+* **Earthquake:** the screen shakes and random buildings crack, tall ones more often.
+* **Storm:** dark skies, heavy rain and lightning damage some roofs.
+* **Damaged buildings** look broken and smoke. They earn nothing and are closed until **renovated**. Renovation costs 25% of the building's price and takes a short build. The disaster report has a **Renovate all** button.
+
+### 9.6 Fresh save for the new world
+The new map uses new save slots, so the old city's data stays untouched in the database. Player names carry over.
+
+### 9.7 v5 status
+Built and tested: stages and the free starter house, the new biome/river/hill world with main highways and railway, 8-direction curved roads, bridges, rails, five road surfaces, line/bend/free road tools, gardens, unpave/flatten/smooth, smooth Bézier traffic with edge entry and exit, vehicle types gated by buildings, trains, disasters with renovation, and creative mode on the new map.
+
+### 9.8 Road tool design (fixes the old paving tool)
+The old tool painted only the tiles under sampled pointer positions, so a fast drag left gaps. Now every shape is computed between the start and end tile (Bresenham line, snapped 8-way line, L-shaped bend), so no tile is ever skipped. Pending tiles are shown first and paid for only when you press Pave it.
